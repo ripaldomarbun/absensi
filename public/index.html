@@ -158,71 +158,85 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 </div>
 
 <!-- SATOPS: SCANNER -->
-<div id="page-satops" class="page" style="padding:16px">
-  <div class="header" style="margin-bottom:6px">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="width:34px;height:34px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:26px;height:26px;object-fit:contain"></div>
-      <div>
-        <p style="font-size:10px;color:#6B7280;line-height:1.2">Satops Patnal</p>
-        <p style="font-size:14px;font-weight:700;color:#810B38;line-height:1.2" id="satops-name">Seno</p>
+<div id="page-satops" class="page" style="padding:16px;background:#F1E2D1">
+
+  <!-- Header with accent bar -->
+  <div style="background:linear-gradient(135deg,#06213E,#0D3B66);border-radius:14px;padding:14px 16px;margin-bottom:12px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(241,191,96,.08)"></div>
+    <div style="position:absolute;bottom:-30px;left:-10px;width:60px;height:60px;border-radius:50%;background:rgba(241,191,96,.06)"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:38px;height:38px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:28px;height:28px;object-fit:contain"></div>
+      <div style="flex:1">
+        <p style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.5px;text-transform:uppercase">Satops Patnal</p>
+        <p style="font-size:16px;font-weight:700;color:#fff;line-height:1.2" id="satops-name">Seno</p>
       </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span class="gps-chip success" id="satops-gps" style="font-size:10px;padding:3px 8px">📍 Dalam area</span>
-      <button id="btn-logout-satops" style="background:none;border:none;font-size:11px;color:#E8505B;cursor:pointer;padding:4px">✕</button>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="gps-chip success" id="satops-gps" style="font-size:9px;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,.15);color:#4ADE80;border:1px solid rgba(34,197,94,.3)">📍 Dalam area</span>
+        <button id="btn-logout-satops" style="background:rgba(255,255,255,.1);border:none;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;padding:4px 8px;border-radius:6px">✕</button>
+      </div>
     </div>
   </div>
 
-  <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
-    <div class="pill-group" id="satops-session" style="display:flex;gap:4px;margin:0;flex:1">
-      <button class="pill active" style="height:32px;font-size:11px;padding:0 12px;flex:1">☀️ Pagi</button>
-      <button class="pill" style="height:32px;font-size:11px;padding:0 12px;flex:1">🌙 Sore</button>
+  <!-- Session & Pembina row -->
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <div class="pill-group" id="satops-session" style="display:flex;gap:3px;margin:0;background:#fff;border-radius:10px;padding:3px;flex:1;min-width:140px">
+      <button class="pill active" style="height:32px;font-size:12px;padding:0 16px;flex:1;border-radius:8px">☀️ Pagi</button>
+      <button class="pill" style="height:32px;font-size:12px;padding:0 16px;flex:1;border-radius:8px">🌙 Sore</button>
     </div>
-    <span style="font-size:13px;color:#6B7280;font-weight:500">Pembina Apel:</span>
-    <input type="text" id="pembina-input" placeholder="Nama pembina apel..." name="pembina" style="border:1px solid #DCC3AA;border-radius:6px;outline:none;font-size:13px;padding:6px 10px;background:#fff;color:#541A1A;flex:1;min-width:160px">
-    <span style="font-size:10px;color:#6B7280" id="pembina-status">tersimpan</span>
+    <div style="display:flex;align-items:center;gap:6px;background:#fff;border-radius:10px;padding:4px 10px;flex:2;min-width:200px">
+      <span style="font-size:12px;color:#6B7280;white-space:nowrap">👤 Pembina:</span>
+      <input type="text" id="pembina-input" placeholder="Nama pembina apel..." name="pembina" style="border:none;outline:none;font-size:13px;padding:4px 0;background:transparent;color:#541A1A;flex:1;min-width:80px">
+      <span style="font-size:10px;color:#6B7280;white-space:nowrap" id="pembina-status">✓</span>
+    </div>
   </div>
 
   <!-- Action buttons -->
-  <div style="display:flex;gap:6px;margin-bottom:6px">
-    <button class="btn btn-primary" id="btn-camera-scan" style="flex:1;height:36px;font-size:12px;border-radius:8px">📸 Scan Kamera</button>
-    <button class="btn btn-outline" id="btn-cetak" style="flex:0;height:36px;font-size:11px;border-radius:8px;padding:0 12px">🖨️ Cetak</button>
-    <button class="btn btn-outline" id="gps-toggle2" style="flex:0;height:36px;font-size:11px;border-radius:8px;padding:0 12px">📍 Simulasi</button>
+  <div style="display:flex;gap:6px;margin-bottom:10px">
+    <button class="btn btn-primary" id="btn-camera-scan" style="flex:1;height:40px;font-size:13px;border-radius:10px;gap:6px">📸 Scan Pegawai</button>
+    <button class="btn btn-outline" id="btn-cetak" style="flex:0;height:40px;font-size:12px;border-radius:10px;padding:0 14px">🖨️</button>
+    <button class="btn btn-outline" id="gps-toggle2" style="flex:0;height:40px;font-size:12px;border-radius:10px;padding:0 14px">📍</button>
   </div>
 
   <!-- Camera Scanner -->
-  <div id="scanner-container" style="display:none;background:#000;border-radius:10px;overflow:hidden;margin-bottom:6px;position:relative">
-    <div id="scanner-view" style="width:100%;min-height:200px"></div>
-    <button id="btn-stop-scanner" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">✕ Tutup</button>
-    <div style="position:absolute;bottom:8px;left:8px;right:8px;text-align:center;color:rgba(255,255,255,.8);font-size:13px;background:rgba(0,0,0,.4);padding:4px 8px;border-radius:6px">Arahkan QR ke kamera</div>
+  <div id="scanner-container" style="display:none;background:#000;border-radius:12px;overflow:hidden;margin-bottom:10px;position:relative;border:2px solid #F1BF60">
+    <div id="scanner-view" style="width:100%;min-height:220px"></div>
+    <button id="btn-stop-scanner" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">✕ Tutup</button>
+    <div style="position:absolute;bottom:8px;left:8px;right:8px;text-align:center;color:rgba(255,255,255,.8);font-size:13px;background:rgba(0,0,0,.5);padding:6px 12px;border-radius:8px">Arahkan QR ke kamera</div>
   </div>
 
-  <!-- Stats bar -->
-  <div id="satops-stats" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;background:#fff;border-radius:8px;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
-    <span style="font-weight:600;color:#810B38">📊</span>
-    <span>Hadir: <b id="scan-count">0</b>/<b id="scan-total">5</b></span>
-    <span style="color:#DCC3AA">|</span>
-    <span id="status-badges" style="display:flex;gap:4px;flex-wrap:wrap"></span>
-    <span style="margin-left:auto;font-size:10px;color:#810B38;font-weight:600" id="sesi-label">Pagi</span>
-  </div>
-
-  <!-- Scan + Scan history compact -->
-  <div id="scan-section" style="background:#fff;border-radius:10px;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:6px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-      <span style="font-size:13px;font-weight:600;color:#541A1A">✅ Scan Masuk</span>
-      <span style="font-size:12px;color:#6B7280;cursor:pointer" id="toggle-scan-list">tampilkan ▾</span>
+  <!-- Stats card -->
+  <div id="satops-stats" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:14px;background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="width:32px;height:32px;border-radius:8px;background:#F1E2D1;display:flex;align-items:center;justify-content:center;font-size:15px">✅</span>
+      <div>
+        <p style="font-size:9px;color:#6B7280;text-transform:uppercase;letter-spacing:.3px">Hadir</p>
+        <p style="font-size:16px;font-weight:700;color:#810B38"><b id="scan-count" style="color:#810B38">0</b><span style="color:#DCC3AA;font-weight:400">/</span><b id="scan-total" style="color:#541A1A">60</b></p>
+      </div>
     </div>
-    <div id="scan-history" class="scroll-list" style="max-height:150px;overflow-y:auto;display:none">
-      <div class="text-center" style="padding:10px;color:#6B7280;font-size:13px">📷 Belum ada scan</div>
+    <div style="width:1px;height:30px;background:#F1E2D1"></div>
+    <span id="status-badges" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></span>
+    <span style="font-size:10px;color:#810B38;font-weight:700;background:#F1E2D1;padding:3px 10px;border-radius:20px;white-space:nowrap" id="sesi-label">Pagi</span>
+  </div>
+
+  <!-- Scan history card -->
+  <div style="background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:13px;font-weight:600;color:#541A1A">Scan Masuk</span>
+      <span style="font-size:11px;color:#6B7280;cursor:pointer;padding:2px 8px;border-radius:6px;background:#F1E2D1" id="toggle-scan-list">tampilkan ▾</span>
+    </div>
+    <div id="scan-history" class="scroll-list" style="max-height:160px;overflow-y:auto;display:none">
+      <div class="text-center" style="padding:14px;color:#6B7280;font-size:13px">📷 Belum ada scan</div>
     </div>
   </div>
 
-  <!-- Status list -->
-  <details id="status-list-section" style="margin-bottom:4px">
-    <summary style="font-size:13px;font-weight:600;color:#810B38;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px">📋 Atur Status Pegawai ▾</summary>
-    <input type="text" id="status-search" name="status-search" placeholder="🔍 Cari nama..." style="width:100%;margin-bottom:4px;padding:6px 10px;border:1px solid #DCC3AA;border-radius:6px;font-size:13px;outline:none;background:#fff;box-sizing:border-box">
-    <div id="status-list-container" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px">
-      <div class="text-center" style="padding:8px;color:#6B7280;font-size:13px">Memuat data...</div>
+  <!-- Status management -->
+  <details id="status-list-section" style="margin-bottom:4px;background:#fff;border-radius:12px;padding:8px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <summary style="font-size:13px;font-weight:600;color:#810B38;cursor:pointer;padding:2px 0;display:flex;align-items:center;gap:6px">📋 Atur Status Pegawai</summary>
+    <div style="margin-top:8px">
+      <input type="text" id="status-search" name="status-search" placeholder="🔍 Cari nama..." style="width:100%;margin-bottom:6px;padding:8px 12px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;background:#F9F5F0;color:#541A1A;box-sizing:border-box">
+      <div id="status-list-container" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+        <div class="text-center" style="padding:12px;color:#6B7280;font-size:13px">Memuat data...</div>
+      </div>
     </div>
   </details>
 </div>
