@@ -1,0 +1,4 @@
+node_modules/
+simpel.db*
+.env
+.DS_Store

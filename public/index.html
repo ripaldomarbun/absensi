@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SIMPEL — Rutan Batam</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F1E2D1;display:flex;justify-content:center;min-height:100vh;color:#541A1A}
+.app{width:100%;max-width:400px;min-height:100vh;background:#F1E2D1;position:relative;overflow:hidden}
+.page{display:none;flex-direction:column;min-height:100vh;padding:20px 16px;animation:fadeIn .25s ease}
+.page.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes checkBounce{0%{transform:scale(0)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+@keyframes flash{0%{background:rgba(255,255,255,.8)}100%{background:transparent}}
+@keyframes scanPop{0%{transform:scale(0.5);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+#scan-success-overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:10000;pointer-events:none;transition:opacity .3s}
+#scan-success-overlay.hide{opacity:0}
+#scan-success-overlay.show{opacity:1}
+#scan-success-overlay .scan-check{width:140px;min-height:140px;border-radius:50%;background:#22C55E;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:scanPop .4s ease-out;box-shadow:0 8px 32px rgba(34,197,56,.4);padding:16px;text-align:center}
+#scan-success-overlay .scan-check-icon{font-size:48px;line-height:1}
+#scan-success-overlay .scan-check-name{font-size:13px;font-weight:600;margin-top:6px;line-height:1.2}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-sm{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:48px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all .12s;gap:6px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#810B38;color:#fff;box-shadow:0 4px 12px rgba(26,95,122,.25)}
+.btn-primary:hover{background:#154f66}
+.btn-success{background:#810B38;color:#fff}
+.btn-outline{background:transparent;color:#810B38;border:1.5px solid #810B38}
+.btn-outline:hover{background:#DCC3AA}
+.btn-danger{color:#E8505B;border:1.5px solid #E8505B;background:transparent}
+.btn-pill{height:44px;border-radius:22px;padding:0 20px;font-size:14px}
+.input-group{display:flex;flex-direction:column;gap:6px}
+.input-group label{font-size:13px;font-weight:500}
+.input-group input{height:48px;border:1.5px solid #DCC3AA;border-radius:10px;padding:0 14px;font-size:15px;outline:none;transition:border-color .15s}
+.input-group input:focus{border-color:#810B38;box-shadow:0 0 0 3px rgba(26,95,122,.1)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase}
+.badge-success{background:#F1E2D1;color:#810B38}
+.badge-primary{background:#DCC3AA;color:#810B38}
+.badge-warning{background:#FEF8E7;color:#D4A843}
+.badge-danger{background:#FDECEE;color:#E8505B}
+.logo-circle{width:72px;height:72px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:28px;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);border:2px solid #F1BF60;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.divider{display:flex;align-items:center;gap:12px;color:#6B7280;font-size:12px;font-weight:500}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#DCC3AA}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120px);background:#541A1A;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;z-index:999;max-width:360px;width:calc(100% - 32px);text-align:center;transition:transform .3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.header h1{font-size:19px;font-weight:700}
+.header .back{background:none;border:none;font-size:22px;cursor:pointer;padding:4px}
+.pill-group{display:flex;gap:8px;margin-bottom:16px}
+.pill{flex:1;height:44px;border-radius:22px;border:1.5px solid #DCC3AA;background:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .12s;color:#6B7280}
+.pill.active{background:#810B38;color:#fff;border-color:#810B38}
+.pill:active{transform:scale(.97)}
+.qr-container{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px}
+.qr-code{width:250px;height:250px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6B7280}
+.progress-bar{width:100%;height:6px;background:#DCC3AA;border-radius:3px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:3px;transition:width 1s linear,background .5s}
+.gps-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:6px 12px;border-radius:20px}
+.gps-chip.success{background:#F1E2D1;color:#810B38}
+.gps-chip.danger{background:#FDECEE;color:#E8505B}
+.scroll-list{display:flex;flex-direction:column;gap:4px}
+.scroll-list .row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f0eb}
+.scroll-list .row:last-child{border-bottom:none}
+.sticky-bottom{position:sticky;bottom:0;background:#fff;padding:12px 0;border-top:1px solid #DCC3AA;margin-top:auto}
+@media print{body{background:#fff}.app{display:none!important;max-width:100%}.page,.page.active{display:none!important}#page-report{display:block!important;padding:0!important}.no-print{display:none!important}header,footer{display:none!important}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+.flex-1{flex:1}
+.text-center{text-align:center}
+.text-secondary{color:#6B7280}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mt-4{margin-top:16px}
+.mt-6{margin-top:24px}
+.mb-4{margin-bottom:16px}
+.mb-6{margin-bottom:24px}
+.gap-3{gap:12px}
+@media(max-width:420px){.qr-code{width:200px;height:200px}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+<div class="app" id="app">
+<div id="toast" class="toast"></div>
+
+<!-- LOGIN -->
+<div id="page-login" class="page active">
+  <div class="flex-1" style="display:flex;flex-direction:column;justify-content:center;gap:24px">
+    <div class="text-center">
+      <div class="logo-circle" style="width:70px;height:70px;margin:0 auto;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden;border:2px solid #F1BF60"><img src="/static/logo_rutan.png" alt="Rutan Batam" style="width:58px;height:58px;object-fit:contain"></div>
+      <h1 style="font-size:20px;font-weight:700;margin-top:14px">SIMPEL</h1>
+      <p style="color:#6B7280;font-size:12px;margin-top:4px">Sistem Informasi Monitoring Presensi Elektronik</p>
+      <p style="color:#6B7280;font-size:11px;margin-top:0">KEMENTERIAN IMIGRASI DAN PEMASYARAKATAN RI</p>
+      <p style="color:#6B7280;font-size:11px;margin-top:0">RUMAH TAHANAN NEGARA KELAS IIA BATAM</p>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div class="input-group">
+        <label>NIP</label>
+        <input type="text" id="nip" placeholder="Masukkan NIP" value="198605042007011002" autocomplete="off">
+      </div>
+      <div class="input-group" style="margin-top:-4px;display:none">
+        <select id="pegawai-select" style="width:100%;height:42px;border:1.5px solid #DCC3AA;border-radius:10px;padding:0 12px;font-size:13px;outline:none;background:#fff;color:#541A1A;font-family:inherit">
+          <option value="">— Pilih Nama Pegawai —</option>
+        </select>
+        <select id="satops-select" style="width:100%;height:42px;border:1.5px solid #DCC3AA;border-radius:10px;padding:0 12px;font-size:13px;outline:none;background:#fff;color:#541A1A;font-family:inherit">
+          <option value="">— Pilih Satops —</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Masukkan password" value="password123">
+      </div>
+      <button class="btn btn-primary mt-2" id="btn-login">Masuk</button>
+      <p style="text-align:center;font-size:12px;color:#6B7280">Password: <b>password123</b> · Admin: NIP <b>199003102011031001</b></p>
+    </div>
+  </div>
+</div>
+
+<!-- PEGAWAI: QR DISPLAY -->
+<div id="page-pegawai" class="page">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:40px;height:40px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:32px;height:32px;object-fit:contain"></div>
+      <div>
+        <p style="font-size:12px;color:#6B7280" id="pegawai-greeting">Selamat pagi,</p>
+        <p style="font-size:18px;font-weight:700;color:#810B38" id="pegawai-name">Rafi</p>
+      </div>
+    </div>
+    <button id="btn-logout-pegawai" style="background:none;border:none;font-size:13px;color:#E8505B;cursor:pointer;padding:4px">Keluar</button>
+  </div>
+
+  <div class="pill-group" id="session-pills">
+    <button class="pill active" id="pill-pagi">☀️ Apel Pagi</button>
+    <button class="pill" id="pill-sore">🌙 Apel Sore</button>
+  </div>
+
+  <div class="qr-container">
+    <div class="qr-code" id="qr-area">
+      <canvas id="qr-canvas"></canvas>
+    </div>
+    <p style="font-size:13px;font-weight:600" id="qr-user-label">Rafi Setiawan — 199001012010011001</p>
+  </div>
+
+  <div class="progress-bar" id="timer-bar"><div class="fill" id="timer-fill" style="width:0%;background:#810B38"></div></div>
+  <p style="text-align:right;font-size:12px;color:#6B7280;font-variant-numeric:tabular-nums" id="timer-label">QR expires in 60s</p>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+    <div class="gps-chip success" id="pegawai-gps">📍 Dalam area rutan</div>
+    <button class="btn btn-outline" id="btn-refresh-qr" style="width:auto;height:36px;padding:0 16px;font-size:12px;border-radius:8px">↻ Refresh</button>
+    <button class="btn btn-outline" id="gps-toggle" style="width:auto;height:36px;padding:0 12px;font-size:11px;border-radius:8px">📍 Simulasi</button>
+  </div>
+
+  <div class="divider mt-4 mb-4">Riwayat Apel Hari Ini</div>
+  <div id="pegawai-history" style="display:flex;flex-direction:column;gap:6px">
+    <div class="card-sm text-center" style="padding:20px;color:#6B7280;font-size:13px">📋 Belum ada riwayat apel</div>
+  </div>
+</div>
+
+<!-- SATOPS: SCANNER -->
+<div id="page-satops" class="page" style="padding:16px">
+  <div class="header" style="margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:34px;height:34px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:26px;height:26px;object-fit:contain"></div>
+      <div>
+        <p style="font-size:10px;color:#6B7280;line-height:1.2">Satops Patnal</p>
+        <p style="font-size:14px;font-weight:700;color:#810B38;line-height:1.2" id="satops-name">Seno</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="gps-chip success" id="satops-gps" style="font-size:10px;padding:3px 8px">📍 Dalam area</span>
+      <button id="btn-logout-satops" style="background:none;border:none;font-size:11px;color:#E8505B;cursor:pointer;padding:4px">✕</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+    <div class="pill-group" id="satops-session" style="display:flex;gap:4px;margin:0;flex:1">
+      <button class="pill active" style="height:32px;font-size:11px;padding:0 12px;flex:1">☀️ Pagi</button>
+      <button class="pill" style="height:32px;font-size:11px;padding:0 12px;flex:1">🌙 Sore</button>
+    </div>
+    <span style="font-size:13px;color:#6B7280;font-weight:500">Pembina Apel:</span>
+    <input type="text" id="pembina-input" placeholder="Nama pembina apel..." name="pembina" style="border:1px solid #DCC3AA;border-radius:6px;outline:none;font-size:13px;padding:6px 10px;background:#fff;color:#541A1A;flex:1;min-width:160px">
+    <span style="font-size:10px;color:#6B7280" id="pembina-status">tersimpan</span>
+  </div>
+
+  <!-- Action buttons -->
+  <div style="display:flex;gap:6px;margin-bottom:6px">
+    <button class="btn btn-primary" id="btn-camera-scan" style="flex:1;height:36px;font-size:12px;border-radius:8px">📸 Scan Kamera</button>
+    <button class="btn btn-outline" id="btn-cetak" style="flex:0;height:36px;font-size:11px;border-radius:8px;padding:0 12px">🖨️ Cetak</button>
+    <button class="btn btn-outline" id="gps-toggle2" style="flex:0;height:36px;font-size:11px;border-radius:8px;padding:0 12px">📍 Simulasi</button>
+  </div>
+
+  <!-- Camera Scanner -->
+  <div id="scanner-container" style="display:none;background:#000;border-radius:10px;overflow:hidden;margin-bottom:6px;position:relative">
+    <div id="scanner-view" style="width:100%;min-height:200px"></div>
+    <button id="btn-stop-scanner" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">✕ Tutup</button>
+    <div style="position:absolute;bottom:8px;left:8px;right:8px;text-align:center;color:rgba(255,255,255,.8);font-size:13px;background:rgba(0,0,0,.4);padding:4px 8px;border-radius:6px">Arahkan QR ke kamera</div>
+  </div>
+
+  <!-- Stats bar -->
+  <div id="satops-stats" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;background:#fff;border-radius:8px;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+    <span style="font-weight:600;color:#810B38">📊</span>
+    <span>Hadir: <b id="scan-count">0</b>/<b id="scan-total">5</b></span>
+    <span style="color:#DCC3AA">|</span>
+    <span id="status-badges" style="display:flex;gap:4px;flex-wrap:wrap"></span>
+    <span style="margin-left:auto;font-size:10px;color:#810B38;font-weight:600" id="sesi-label">Pagi</span>
+  </div>
+
+  <!-- Scan + Scan history compact -->
+  <div id="scan-section" style="background:#fff;border-radius:10px;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+      <span style="font-size:13px;font-weight:600;color:#541A1A">✅ Scan Masuk</span>
+      <span style="font-size:12px;color:#6B7280;cursor:pointer" id="toggle-scan-list">tampilkan ▾</span>
+    </div>
+    <div id="scan-history" class="scroll-list" style="max-height:150px;overflow-y:auto;display:none">
+      <div class="text-center" style="padding:10px;color:#6B7280;font-size:13px">📷 Belum ada scan</div>
+    </div>
+  </div>
+
+  <!-- Status list -->
+  <details id="status-list-section" style="margin-bottom:4px">
+    <summary style="font-size:13px;font-weight:600;color:#810B38;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px">📋 Atur Status Pegawai ▾</summary>
+    <input type="text" id="status-search" name="status-search" placeholder="🔍 Cari nama..." style="width:100%;margin-bottom:4px;padding:6px 10px;border:1px solid #DCC3AA;border-radius:6px;font-size:13px;outline:none;background:#fff;box-sizing:border-box">
+    <div id="status-list-container" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px">
+      <div class="text-center" style="padding:8px;color:#6B7280;font-size:13px">Memuat data...</div>
+    </div>
+  </details>
+</div>
+
+<!-- DETAIL -->
+<div id="page-detail" class="page">
+  <div class="header">
+    <button class="back" id="btn-back-detail" style="margin-right:auto">←</button>
+    <div style="width:36px;height:36px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;margin-right:auto;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:28px;height:28px;object-fit:contain"></div>
+    <h1 style="flex:1;text-align:center">Detail Absensi</h1>
+    <div style="width:28px"></div>
+  </div>
+  <div class="card" id="detail-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div id="detail-icon" style="width:44px;height:44px;border-radius:10px;background:#DCC3AA;display:flex;align-items:center;justify-content:center;font-size:20px">☀️</div>
+      <div><p style="font-weight:700;font-size:15px" id="detail-type">Apel Pagi</p><p style="font-size:12px;color:#6B7280" id="detail-date">Sen, 24 Jun 2026</p></div>
+      <div style="margin-left:auto"><span class="badge badge-success" id="detail-status">Hadir</span></div>
+    </div>
+    <div style="height:1px;background:#DCC3AA;margin-bottom:14px"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div style="display:flex;gap:8px"><span style="width:24px">👤</span><span style="color:#6B7280;min-width:50px">Nama</span><span style="font-weight:600" id="detail-name">Andi Pratama</span></div>
+      <div style="display:flex;gap:8px"><span style="width:24px">🆔</span><span style="color:#6B7280;min-width:50px">NIP</span><span id="detail-nip">1987654321</span></div>
+      <div style="display:flex;gap:8px"><span style="width:24px">🕐</span><span style="color:#6B7280;min-width:50px">Waktu</span><span style="font-weight:600" id="detail-time">08:12 WIB</span></div>
+      <div style="display:flex;gap:8px"><span style="width:24px">📍</span><span style="color:#6B7280;min-width:50px">Lokasi</span><span id="detail-location">Rutan Kelas IIA Batam</span></div>
+      <div style="display:flex;gap:8px"><span style="width:24px">📡</span><span style="color:#6B7280;min-width:50px">GPS</span><span id="detail-gps" style="color:#810B38">✅ Dalam area</span></div>
+      <div style="display:flex;gap:8px"><span style="width:24px">🔍</span><span style="color:#6B7280;min-width:50px">Discan</span><span id="detail-scanned-by">Satops Seno</span></div>
+      <div style="display:flex;gap:8px"><span style="width:24px">📋</span><span style="color:#6B7280;min-width:50px">Sesi</span><span id="detail-sesi">Apel Pagi</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="page-success" class="page">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center">
+    <div class="check-circle" style="width:100px;height:100px;border-radius:50%;background:#F1E2D1;display:flex;align-items:center;justify-content:center;margin:0 auto;animation:checkBounce .5s ease forwards">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#810B38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:50px;height:50px"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <h1 style="font-size:22px;font-weight:700;color:#810B38" id="success-title">Absen Berhasil!</h1>
+    <p style="color:#6B7280;font-size:13px" id="success-subtitle">Scan Apel Pagi berhasil</p>
+    <div class="card" style="width:100%">
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;gap:8px"><span>👤</span><span style="color:#6B7280;min-width:50px">Nama</span><span style="font-weight:600" id="s-name">Andi</span></div>
+        <div style="display:flex;gap:8px"><span>🕐</span><span style="color:#6B7280;min-width:50px">Waktu</span><span style="font-weight:600" id="s-time">08:12</span></div>
+        <div style="display:flex;gap:8px"><span>📍</span><span style="color:#6B7280;min-width:50px">Lokasi</span><span id="s-loc">Rutan Batam</span></div>
+      </div>
+    </div>
+    <button class="btn btn-outline mt-2" id="btn-kembali-success">Kembali</button>
+  </div>
+  </div>
+</div>
+
+<!-- PAGE REPORT (Print) -->
+<div id="page-report" class="page">
+  <div style="font-size:11px;font-family:'Times New Roman',Times,serif;padding:30px 40px;background:#fff;min-height:100vh">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">
+      <div style="flex-shrink:0">
+        <div style="width:75px;height:75px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:2px solid #F1BF60"><img src="/static/logo_rutan.png" alt="Logo Rutan Batam" style="width:65px;height:auto;display:block"></div>
+      </div>
+      <div style="flex:1;text-align:center">
+        <div style="margin-bottom:2px;font-size:13px;font-weight:bold">KEMENTERIAN IMIGRASI DAN PEMASYARAKATAN REPUBLIK INDONESIA</div>
+        <div style="font-size:12px;font-weight:bold">DIREKTORAT JENDERAL PEMASYARAKATAN</div>
+        <div style="font-size:12px;font-weight:bold">KANTOR WILAYAH KEPULAUAN RIAU</div>
+        <div style="font-size:12px;font-weight:bold">RUMAH TAHANAN NEGARA KELAS IIA BATAM</div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:9px;margin-bottom:16px">Jalan Raya Trans Barelang Km. 02 Tembesi Kota Batam 29439<br>Laman : rutanbatam.kemenkumham.go.id &nbsp; Pos-el : rutanbatam@gmail.com</div>
+
+    <hr style="border:1px solid #000;margin-bottom:16px">
+
+    <div style="text-align:center;font-size:13px;font-weight:bold;margin-bottom:8px">ABSENSI APEL PEGAWAI<br>RUMAH TAHANAN NEGARA KELAS IIA BATAM</div>
+
+    <table style="width:100%;font-size:10px;margin-bottom:16px">
+      <tr><td style="width:120px">Hari / Tanggal</td><td>: <span id="rpt-tanggal">_________________</span></td></tr>
+      <tr><td>Pembina Apel</td><td>: <span id="rpt-pembina">_________________</span></td></tr>
+      <tr><td>Apel</td><td>: <span id="rpt-sesi">Pagi / Sore</span></td></tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;font-size:9px;margin-bottom:16px" border="1">
+      <thead>
+        <tr style="background:#f0f0f0;font-weight:bold;text-align:center">
+          <td style="width:28px;padding:4px 2px">No</td>
+          <td style="padding:4px 6px">Nama</td>
+          <td style="width:120px;padding:4px 2px">NIP</td>
+          <td style="width:55px;padding:4px 2px">Kehadiran</td>
+          <td style="width:80px;padding:4px 2px">Ket.</td>
+        </tr>
+      </thead>
+      <tbody id="rpt-tbody"></tbody>
+    </table>
+
+    <div style="display:flex;gap:40px;font-size:9px;margin-bottom:16px">
+      <div>
+        <b>Keterangan :</b><br>
+        TK : Tanpa Keterangan<br>
+        DL : Dinas luar<br>
+        LP : Lepas Piket / Libur Pengganti<br>
+        C : Cuti<br>
+        S : Sakit
+      </div>
+      <div>
+        HADIR : _____ &nbsp; LP : _____ &nbsp; S : _____ &nbsp; TK : _____ &nbsp; IZIN : _____<br>
+        DL : _____ &nbsp; C : _____ &nbsp; T : _____
+      </div>
+    </div>
+
+    <table style="width:100%;font-size:10px;margin-top:32px">
+      <tr>
+        <td style="width:50%;text-align:center">
+          <div style="margin-bottom:56px">KASATOPS PATNAL</div>
+          <div style="text-decoration:underline;font-weight:bold" id="rpt-kasatops">_________________</div>
+        </td>
+        <td style="width:50%;text-align:center">
+          <div style="margin-bottom:56px">Mengetahui,<br>KASUBSI PENGELOLAAN</div>
+          <div style="text-decoration:underline;font-weight:bold" id="rpt-kasubsipengelolaan">_________________</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div style="text-align:center;padding:16px;background:#f9f9f9" class="no-print">
+    <button class="btn btn-primary" id="btn-cetak-pdf" style="width:auto;padding:0 32px;display:inline-flex">🖨️ Cetak / PDF</button>
+    <button class="btn btn-outline" id="btn-tutup-laporan" style="width:auto;padding:0 32px;display:inline-flex;margin-left:8px">Tutup</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.API_URL || window.location.origin + '/api';
+let currentUser = null;
+let token = localStorage.getItem('simpel_token');
+let sesiAktif = 'pagi';
+let qrTimer = null;
+let qrExpiry = 0;
+let qrInstance = null;
+let qrData = null;
+let scanLog = [];
+let pegawaiLog = [];
+let pegawaiList = [];
+let detailFrom = null;
+let scannedPegawai = {};
+let gpsWatchId = null;
+let pegawaiGpsOk = true;
+let satopsGpsOk = true;
+let gpsSimulasi = false;
+let html5Scanner = null;
+let scannerRunning = false;
+
+// Data login untuk dropdown
+const loginUsers = {
+  pegawai: [
+    { nip: '198605042007011002', name: 'FAJAR TEGUH WIBOWO, A.Md.IP, S.Sos, M.A', divisi: 'Pimpinan' },
+    { nip: '198210192007031002', name: 'HERWAN SYAHPUTRA, S.Sos', divisi: 'Pimpinan' },
+    { nip: '199803102021001001', name: 'RAMADINA UMARO, S.Tr.Pas', divisi: 'Pimpinan' },
+    { nip: '199005072010121001', name: 'SAID FAHZIYADI ALWI, S.H., M.H.', divisi: 'Pimpinan' },
+    { nip: '199412132021001001', name: 'RICKY KURNIADY, S.Tr.Pas.', divisi: 'Pimpinan' },
+    { nip: '198211162008012009', name: 'RIKA NOFIAR', divisi: 'Pengelolaan' },
+    { nip: '198912142017121006', name: 'AKMAL ARAFAT', divisi: 'Pengelolaan' },
+    { nip: '199110062017121001', name: 'HANDY WIJAYA', divisi: 'Pengelolaan' },
+    { nip: '199208232017121003', name: 'FELIX ASNAWI', divisi: 'Pengelolaan' },
+    { nip: '199504122017121002', name: 'ASYAMI FARY PRATAMA', divisi: 'Pengelolaan' },
+    { nip: '199504272017121006', name: 'EKA AFRI PRASETIAWAN', divisi: 'Pengelolaan' },
+    { nip: '199505152017122003', name: 'DHEA FIFTEN MANDEYKA', divisi: 'Pengelolaan' },
+    { nip: '199901032017121001', name: 'DANI RAMADHANI', divisi: 'Pengelolaan' },
+    { nip: '200003042022031001', name: 'AMSAL PURBA', divisi: 'Pengelolaan' },
+    { nip: '200009172022031001', name: 'TIMOTHY RICHARDO H', divisi: 'Pengelolaan' },
+    { nip: '200107222022031001', name: 'AVIV RIZKI AL FARIS', divisi: 'Pengelolaan' },
+    { nip: '200208032022031001', name: 'NOVAL GUSTIAN', divisi: 'Pengelolaan' },
+    { nip: '198812282008012001', name: 'DESI ARMIDA, S.H.', divisi: 'KPR' },
+    { nip: '198811142008011001', name: 'YUDHA NUGROHO, S.H.', divisi: 'KPR' },
+    { nip: '198804022009121007', name: 'RONALD.E, S.H.', divisi: 'KPR' },
+    { nip: '198902102008011001', name: 'M.JEFRI', divisi: 'KPR' },
+    { nip: '198705182008011001', name: 'FRANKI AJI KURNIAWAN', divisi: 'KPR' },
+    { nip: '198601292007032001', name: 'FEBI DWI KUSYANTI', divisi: 'KPR' },
+    { nip: '199002072017121002', name: 'FERNANDO SINURAT, S.AP.', divisi: 'KPR' },
+    { nip: '198908272009011001', name: 'AHAD RIADI', divisi: 'KPR' },
+    { nip: '199411222017122005', name: 'UMMI THAYYIBAH', divisi: 'KPR' },
+    { nip: '199502142017121004', name: 'FEBRIAN RAMONDA', divisi: 'KPR' },
+    { nip: '199702272017121003', name: 'ARI HAJAR HIDAYAT', divisi: 'KPR' },
+    { nip: '199709042017121003', name: 'HARIMURTI', divisi: 'KPR' },
+    { nip: '199805152017121001', name: 'AL FATAHFISABILILLAH', divisi: 'KPR' },
+    { nip: '199807142017121003', name: 'DWI ALIF SUWITO', divisi: 'KPR' },
+    { nip: '199712102017121003', name: 'HERDIANSYAH TRI ATMOKO', divisi: 'KPR' },
+    { nip: '199009052025062008', name: 'ELFINA MAGDALENI', divisi: 'KPR' },
+    { nip: '199212192025062002', name: 'CHRISTIANI MARBUN', divisi: 'KPR' },
+    { nip: '199904122025062010', name: 'NUNIK INDARWATI', divisi: 'KPR' },
+    { nip: '198705082010121003', name: 'RIFKI INDRA ANTONI SIRAIT, S.H.', divisi: 'Peltah' },
+    { nip: '198112082009122002', name: 'drg.PUTRI ANDAMDEWI', divisi: 'Peltah' },
+    { nip: '199208172025061007', name: 'dr. ALEX SYAPUTRA SIHALOHO', divisi: 'Peltah' },
+    { nip: '199404152017122002', name: 'Ns.INDAH ANGELICA.S, S.Kep', divisi: 'Peltah' },
+    { nip: '198701082007032001', name: 'NILA USMAWATI', divisi: 'Peltah' },
+    { nip: '198605202008011003', name: 'ARIF SANJAYA', divisi: 'Peltah' },
+    { nip: '198309242009122001', name: 'ELNICK DRIA', divisi: 'Peltah' },
+    { nip: '198912282012121002', name: 'ROYDES PUTRA JAYA PANE', divisi: 'Peltah' },
+    { nip: '199105262022032001', name: 'RISHA MEIRIN, AMd.Kep', divisi: 'Peltah' },
+    { nip: '199512182017121004', name: 'HARI SAHPUTRA', divisi: 'Peltah' },
+    { nip: '199706062017121002', name: 'HAYYU NUR MUHAMMAD', divisi: 'Peltah' },
+    { nip: '199706242017121004', name: 'AMIRUL HADI', divisi: 'Peltah' },
+    { nip: '199703162017121002', name: 'BOBI SUPRIYANTO', divisi: 'Peltah' },
+    { nip: '200012122022031002', name: 'HARIS BUDIMAN', divisi: 'Peltah' },
+    { nip: '200211172022032001', name: 'CHINTYA ROMAITO SIAHAAN', divisi: 'Peltah' },
+    { nip: '200212292022031002', name: 'PATAR GULTOM', divisi: 'Peltah' },
+    { nip: '199308022012121001', name: 'SAMSUL BAHRI, S.E.', divisi: 'Bimgiat' },
+    { nip: '198411272007031001', name: 'RIO SAPUTRA', divisi: 'Bimgiat' },
+    { nip: '198106122008011012', name: 'KUDUS SUSANTO', divisi: 'Bimgiat' },
+    { nip: '198805042008011003', name: 'ADI SAPUTRA', divisi: 'Bimgiat' },
+    { nip: '199011262010121002', name: 'ANDY YONHENDRA SAPUTRA', divisi: 'Bimgiat' },
+    { nip: '198611292009122007', name: 'ERVINORA', divisi: 'Bimgiat' },
+    { nip: '199611112017121006', name: 'EVANDER NICHOLAS WOLLAH', divisi: 'Bimgiat' },
+  ],
+  satops: [
+    { nip: '199707262017121002', name: 'RENALDY WILLY SETYAJI' },
+    { nip: '200605182025062003', name: 'NABILA HYFA' },
+  ],
+};
+
+function populateLoginDropdowns() {
+  const pegawaiSel = document.getElementById('pegawai-select');
+  const satopsSel = document.getElementById('satops-select');
+  loginUsers.pegawai.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.nip; opt.textContent = `${u.name} (${u.divisi})`;
+    pegawaiSel.appendChild(opt);
+  });
+  loginUsers.satops.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.nip; opt.textContent = `${u.name}`;
+    satopsSel.appendChild(opt);
+  });
+}
+
+populateLoginDropdowns();
+
+function toggleGPS() {
+  gpsSimulasi = !gpsSimulasi;
+  const chipP = document.getElementById('pegawai-gps');
+  const chipS = document.getElementById('satops-gps');
+  [chipP, chipS].forEach(chip => {
+    if (!chip) return;
+    chip.textContent = gpsSimulasi ? '📍 Simulasi — Dalam area' : '📍 Mengecek lokasi...';
+    chip.className = 'gps-chip success';
+  });
+  pegawaiGpsOk = true;
+  satopsGpsOk = true;
+  const btn = document.querySelector('#gps-toggle, #gps-toggle2');
+  if (btn) btn.textContent = gpsSimulasi ? '⛳ Real GPS' : '📍 Simulasi';
+}
+
+const RUTAN_COORDS = { lat: 1.0486, lng: 104.0304 };
+
+function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(API_BASE + path, { ...opts, headers }).then(r => {
+    if (r.status === 401) { localStorage.removeItem('simpel_token'); token = null; handleLogout(); throw new Error('Sesi habis'); }
+    return r.json().then(d => { if (d.error) throw new Error(d.error); return d; });
+  });
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 10) return 'Selamat pagi'; if (h < 15) return 'Selamat siang'; if (h < 18) return 'Selamat sore'; return 'Selamat malam';
+}
+
+function formatDate(d) {
+  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatTime(d) {
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+}
+
+function labelStatus(s) {
+  const map = { HADIR: 'Hadir', S: 'Sakit', I: 'Izin', C: 'Cuti', DL: 'Dinas Luar', LP: 'Lepas Piket', TK: 'Tanpa Ket.' };
+  return map[s] || s || 'Tanpa Ket.';
+}
+
+function startGPS(elId) {
+  if (!navigator.geolocation) { document.getElementById(elId).textContent = '📍 GPS tidak tersedia'; return }
+  function update(pos) {
+    if (gpsSimulasi) {
+      document.getElementById(elId).textContent = '📍 Simulasi — Dalam area';
+      document.getElementById(elId).className = 'gps-chip success';
+      if (elId === 'pegawai-gps') pegawaiGpsOk = true;
+      if (elId === 'satops-gps') satopsGpsOk = true;
+      return;
+    }
+    const d = distance(pos.coords.latitude, pos.coords.longitude, RUTAN_COORDS.lat, RUTAN_COORDS.lng);
+    const ok = d <= 100;
+    const chip = document.getElementById(elId);
+    chip.textContent = ok ? '📍 Dalam area rutan' : '📍 Luar area (' + Math.round(d) + 'm)';
+    chip.className = 'gps-chip ' + (ok ? 'success' : 'danger');
+    if (elId === 'pegawai-gps') pegawaiGpsOk = ok;
+    if (elId === 'satops-gps') satopsGpsOk = ok;
+  }
+  function err() {
+    document.getElementById(elId).textContent = '📍 GPS error';
+    document.getElementById(elId).className = 'gps-chip danger';
+    if (elId === 'pegawai-gps') pegawaiGpsOk = true;
+    if (elId === 'satops-gps') satopsGpsOk = true;
+  }
+  gpsWatchId = navigator.geolocation.watchPosition(update, err, { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
+}
+
+function distance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180, Δλ = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function handleLogin() {
+  const nip = document.getElementById('nip').value.trim();
+  const pass = document.getElementById('password').value.trim();
+  try {
+    const d = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ nip, password: pass })
+    });
+    token = d.token;
+    currentUser = d.user;
+    localStorage.setItem('simpel_token', token);
+    localStorage.setItem('simpel_user', JSON.stringify(d.user));
+    if (d.user.role === 'pegawai') await masukPegawai(d.user);
+    else await masukSatops(d.user);
+    showToast(`Selamat datang, ${d.user.name}`);
+  } catch (e) {
+    showToast(e.message);
+  }
+}
+
+function handleLogout() {
+  if (qrTimer) { clearInterval(qrTimer); qrTimer = null }
+  if (gpsWatchId) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null }
+  if (qrInstance) { qrInstance.clear(); qrInstance = null }
+  currentUser = null; token = null; scanLog = []; pegawaiLog = []; scannedPegawai = {}; qrData = null;
+  localStorage.removeItem('simpel_token');
+  localStorage.removeItem('simpel_user');
+  document.getElementById('nip').value = '';
+  document.getElementById('password').value = '';
+  showPage('page-login');
+}
+
+function goBack() {
+  if (detailFrom) showPage(detailFrom);
+  else showPage('page-login');
+}
+
+// ===== PEGAWAI =====
+async function masukPegawai(user) {
+  sesiAktif = 'pagi';
+  document.getElementById('pegawai-greeting').textContent = getGreeting() + ',';
+  document.getElementById('pegawai-name').textContent = user.name;
+  document.getElementById('qr-user-label').textContent = `${user.name} — ${user.nip}`;
+  startGPS('pegawai-gps');
+  fetchPegawaiHistory();
+  showPage('page-pegawai');
+  pilihSesi('pagi');
+}
+
+function resetPegawaiHistory() {
+  document.getElementById('pegawai-history').innerHTML =
+    '<div class="card-sm text-center" style="padding:20px;color:#6B7280;font-size:13px">📋 Belum ada riwayat apel</div>';
+}
+
+async function fetchPegawaiHistory() {
+  try {
+    const d = await api('/pegawai/history');
+    pegawaiLog = d.history || [];
+    updatePegawaiHistoryUI();
+  } catch { resetPegawaiHistory(); }
+}
+
+function pilihSesi(sesi) {
+  sesiAktif = sesi;
+  document.getElementById('pill-pagi').className = 'pill' + (sesi === 'pagi' ? ' active' : '');
+  document.getElementById('pill-sore').className = 'pill' + (sesi === 'sore' ? ' active' : '');
+  refreshQR();
+}
+
+async function refreshQR() {
+  if (qrTimer) { clearInterval(qrTimer); qrTimer = null }
+  if (qrInstance) { qrInstance.clear() }
+  const container = document.getElementById('qr-area');
+  container.innerHTML = '';
+  try {
+    const d = await api('/pegawai/qr-data?sesi=' + sesiAktif);
+    qrData = d.qrData;
+    qrInstance = new QRCode(container, {
+      text: qrData,
+      width: 250,
+      height: 250,
+      colorDark: '#541A1A',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch {
+    container.innerHTML = '<div style="text-align:center;color:#E8505B;padding:40px">❌ Gagal generate QR</div>';
+  }
+  startTimer();
+}
+
+function startTimer() {
+  qrExpiry = 60;
+  const fill = document.getElementById('timer-fill');
+  const label = document.getElementById('timer-label');
+  fill.style.width = '100%'; fill.style.background = '#810B38';
+  label.textContent = 'QR expires in 60s';
+  if (qrTimer) clearInterval(qrTimer);
+  qrTimer = setInterval(() => {
+    qrExpiry--;
+    const pct = (qrExpiry / 60) * 100;
+    fill.style.width = pct + '%';
+    if (qrExpiry > 30) fill.style.background = '#810B38';
+    else if (qrExpiry > 10) fill.style.background = '#D4A843';
+    else fill.style.background = '#E8505B';
+    label.textContent = `QR expires in ${qrExpiry}s`;
+    if (qrExpiry <= 0) { clearInterval(qrTimer); qrTimer = null; refreshQR() }
+  }, 1000);
+}
+
+// ===== SATOPS =====
+async function masukSatops(user) {
+  sesiAktif = 'pagi';
+  document.getElementById('satops-name').textContent = user.name;
+  document.getElementById('sesi-label').textContent = 'Apel Pagi';
+  scanLog = []; scannedPegawai = {};
+  try {
+    const d = await api('/satops/pegawai-list');
+    pegawaiList = d.pegawai || [];
+    document.getElementById('scan-total').textContent = d.total || pegawaiList.length;
+  } catch { pegawaiList = []; }
+  try {
+    await api('/satops/self-scan', { method: 'POST', body: JSON.stringify({ sesi: sesiAktif }) });
+  } catch {}
+  loadPembina();
+  startGPS('satops-gps');
+  fetchScanLog();
+  showPage('page-satops');
+}
+
+function satopsPilihSesi(sesi) {
+  sesiAktif = sesi;
+  document.querySelectorAll('#satops-session .pill').forEach((p, i) => {
+    p.className = 'pill' + (i === 0 && sesi === 'pagi' || i === 1 && sesi === 'sore' ? ' active' : '');
+  });
+  document.getElementById('sesi-label').textContent = sesi === 'pagi' ? 'Apel Pagi' : 'Apel Sore';
+  document.getElementById('pembina-input').value = '';
+  document.getElementById('status-list-section').open = false;
+  api('/satops/self-scan', { method: 'POST', body: JSON.stringify({ sesi }) }).catch(() => {});
+  loadPembina();
+  fetchScanLog();
+}
+
+async function loadPembina() {
+  try {
+    const d = await api('/satops/pembina?sesi=' + sesiAktif);
+    document.getElementById('pembina-input').value = d.pembina || '';
+  } catch {}
+}
+
+async function muatStatusList() {
+  const container = document.getElementById('status-list-container');
+  container.innerHTML = '<div class="text-center" style="padding:12px;color:#6B7280;font-size:12px">Memuat...</div>';
+  try {
+    const d = await api('/satops/status-list?sesi=' + sesiAktif);
+    window._allStatusData = d.pegawai;
+    filterStatusList();
+  } catch {
+    container.innerHTML = '<div class="text-center" style="padding:12px;color:#E8505B;font-size:12px">❌ Gagal memuat data</div>';
+  }
+}
+
+function filterStatusList() {
+  const container = document.getElementById('status-list-container');
+  const search = (document.getElementById('status-search').value || '').toLowerCase().trim();
+  const allData = window._allStatusData || [];
+
+  const filtered = allData.filter(p => {
+    if ((p.status || '').toLowerCase() === 'hadir') return false;
+    if (!search) return true;
+    return p.name.toLowerCase().includes(search) || p.nip.includes(search);
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="text-center" style="padding:12px;color:#6B7280;font-size:12px">' +
+      (search ? '🔍 Tidak ada pegawai dengan nama "' + search + '"' : '✅ Semua pegawai sudah diatur') + '</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => {
+    const curStatus = p.status || 'TK';
+    const highlighted = search ? p.name.replace(new RegExp('(' + search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<b style="color:#810B38">$1</b>') : p.name;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);font-size:14px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;color:#541A1A;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${highlighted}</div>
+        <div style="font-size:11px;color:#6B7280">${p.nip} · ${p.divisi}</div>
+      </div>
+      <select name="status_${p.nip}" aria-label="Status ${p.name}" style="font-size:12px;padding:6px 8px;border:1px solid #DCC3AA;border-radius:6px;background:#fff;color:#541A1A;font-weight:600">
+        <option value="S" ${curStatus==='S'?'selected':''}>Sakit</option>
+        <option value="I" ${curStatus==='I'?'selected':''}>Izin</option>
+        <option value="C" ${curStatus==='C'?'selected':''}>Cuti</option>
+        <option value="DL" ${curStatus==='DL'?'selected':''}>Dinas Luar</option>
+        <option value="LP" ${curStatus==='LP'?'selected':''}>Lepas Piket</option>
+        <option value="TK" ${curStatus==='TK'?'selected':''}>Tanpa Ket.</option>
+      </select>
+    </div>`;
+  }).join('');
+}
+
+async function aturStatus(nip, status) {
+  try {
+    await api('/satops/set-status', {
+      method: 'POST',
+      body: JSON.stringify({ nip, sesi: sesiAktif, status })
+    });
+    showToast('✅ Status diperbarui');
+    fetchScanLog();
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  }
+}
+
+async function simpanPembina() {
+  const pembina = document.getElementById('pembina-input').value.trim();
+  const status = document.getElementById('pembina-status');
+  if (!pembina) { status.textContent = '⚠️ kosong'; setTimeout(() => { status.textContent = 'tersimpan'; }, 2000); return; }
+  try {
+    await api('/satops/pembina', { method: 'POST', body: JSON.stringify({ sesi: sesiAktif, pembina }) });
+    status.textContent = '✅ tersimpan';
+    setTimeout(() => { status.textContent = 'tersimpan'; }, 2000);
+  } catch { status.textContent = '❌ gagal'; }
+}
+
+// ===== KAMERA SCANNER QR =====
+async function startCameraScan() {
+  if (scannerRunning) return;
+  try {
+    const container = document.getElementById('scanner-container');
+    const view = document.getElementById('scanner-view');
+    container.style.display = 'block';
+    document.getElementById('btn-camera-scan').textContent = '⏳ Scan...';
+    document.getElementById('btn-camera-scan').disabled = true;
+
+    html5Scanner = new Html5Qrcode('scanner-view');
+    scannerRunning = true;
+
+    await html5Scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onQrDetected,
+      () => {}
+    );
+  } catch (e) {
+    showToast('❌ Gagal akses kamera: ' + e.message);
+    stopCameraScan();
+  }
+}
+
+function stopCameraScan() {
+  if (html5Scanner) {
+    try { html5Scanner.stop().catch(() => {}); } catch {}
+    html5Scanner = null;
+  }
+  scannerRunning = false;
+  document.getElementById('scanner-container').style.display = 'none';
+  document.getElementById('btn-camera-scan').textContent = '📸 Scan Kamera';
+  document.getElementById('btn-camera-scan').disabled = false;
+}
+
+async function onQrDetected(decodedText) {
+  stopCameraScan();
+
+  let parsed;
+  try { parsed = JSON.parse(decodedText); } catch {
+    showToast('❌ QR tidak valid');
+    return;
+  }
+
+  const { nip, sesi, ts } = parsed;
+  if (!nip || !sesi || !ts) {
+    showToast('❌ Data QR tidak lengkap');
+    return;
+  }
+
+  try {
+    const d = await api('/satops/scan', {
+      method: 'POST',
+      body: JSON.stringify({ qrData: decodedText, gps_ok: pegawaiGpsOk && satopsGpsOk })
+    });
+    showScanToast('ok', `${parsed.name || nip} — ${d.record.scan_time}`);
+    fetchScanLog();
+    fetchPegawaiHistory();
+  } catch (e) {
+    showScanToast('fail', e.message);
+  }
+}
+
+async function fetchScanLog() {
+  try {
+    const d = await api('/satops/scan-log?sesi=' + sesiAktif);
+    scanLog = d.scanLog || [];
+    updateScanUI();
+  } catch { updateScanUI(); }
+}
+
+function updateScanUI() {
+  const list = document.getElementById('scan-history');
+  const count = document.getElementById('scan-count');
+  count.textContent = scanLog.length;
+
+  // Update status badges
+  const badges = document.getElementById('status-badges');
+  const statusCounts = {};
+  scanLog.forEach(r => {
+    const s = (r.status || 'TK').toUpperCase();
+    statusCounts[s] = (statusCounts[s] || 0) + 1;
+  });
+  const labelMap = { HADIR: 'Hadir', S: 'S', I: 'I', C: 'C', DL: 'DL', LP: 'LP', TK: 'TK' };
+  badges.innerHTML = Object.entries(statusCounts)
+    .filter(([k]) => k !== 'HADIR')
+    .map(([k, v]) => `<span style="color:#E8505B;font-size:12px">${labelMap[k]||k}:${v}</span>`)
+    .join('');
+
+  if (scanLog.length === 0) {
+    list.innerHTML = '<div class="text-center" style="padding:10px;color:#6B7280;font-size:13px">📷 Belum ada scan</div>';
+    return;
+  }
+  list.innerHTML = scanLog.map(r => {
+    const isHadir = (r.status || '').toLowerCase() === 'hadir';
+    const icon = isHadir ? '✅' : (labelStatus(r.status) || '📝');
+    const time = r.scan_time ? r.scan_time.slice(11,16) + ' WIB' : (isHadir ? '' : labelStatus(r.status));
+    return `<div class="row" style="padding:6px 0">
+      <div style="width:28px;height:28px;border-radius:6px;background:${isHadir ? '#F1E2D1' : '#FEE2E2'};display:flex;align-items:center;justify-content:center;font-size:14px">${icon}</div>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name}</p>
+        <p style="font-size:11px;color:#6B7280">${r.nip}</p>
+      </div>
+      <span style="font-size:12px;color:${isHadir ? '#6B7280' : '#E8505B'};font-weight:${isHadir ? '400' : '600'};white-space:nowrap">${time}</span>
+    </div>`;
+  }).join('');
+}
+
+function showScanToast(type, msg) {
+  if (type === 'ok') {
+    const name = msg.split('—')[0].trim();
+    const overlay = document.getElementById('scan-success-overlay') || (() => {
+      const el = document.createElement('div');
+      el.id = 'scan-success-overlay';
+      el.innerHTML = '<div class="scan-check"><span class="scan-check-icon">✓</span><span class="scan-check-name"></span></div>';
+      document.body.appendChild(el);
+      return el;
+    })();
+    overlay.querySelector('.scan-check-icon').textContent = '✓';
+    overlay.querySelector('.scan-check-name').textContent = name;
+    overlay.classList.remove('hide');
+    overlay.classList.add('show');
+    setTimeout(() => overlay.classList.add('hide'), 1000);
+  }
+  showToast(type === 'ok' ? '✅ ' + msg : '❌ ' + msg);
+}
+
+function updatePegawaiHistoryUI() {
+  const list = document.getElementById('pegawai-history');
+  const myLog = pegawaiLog.filter(r => r.nip === currentUser.nip);
+  if (myLog.length === 0) {
+    list.innerHTML = '<div class="card-sm text-center" style="padding:20px;color:#6B7280;font-size:13px">📋 Belum ada riwayat apel</div>';
+    return;
+  }
+  list.innerHTML = myLog.map(r =>
+    `<div class="card-sm" style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;border-radius:8px;background:#F1E2D1;display:flex;align-items:center;justify-content:center;font-size:16px">✅</div>
+      <div style="flex:1"><p style="font-weight:600;font-size:13px">${r.sesi_jenis === 'pagi' ? '☀️ Apel Pagi' : '🌙 Apel Sore'}</p><p style="font-size:11px;color:#6B7280">${r.scan_time ? r.scan_time.slice(11,16) : ''} WIB</p></div>
+    </div>`
+  ).join('');
+}
+
+async function cetakLaporan() {
+  try {
+    const d = await api('/satops/laporan?sesi=' + sesiAktif);
+    const now = new Date();
+    const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    document.getElementById('rpt-tanggal').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('rpt-sesi').textContent = d.sesi === 'pagi' ? 'Apel Pagi' : 'Apel Sore';
+    document.getElementById('rpt-pembina').textContent = d.pembina || '_________________';
+
+    const tbody = document.getElementById('rpt-tbody');
+    tbody.innerHTML = '';
+    d.laporan.forEach((p, i) => {
+      tbody.innerHTML += `<tr>
+        <td style="text-align:center;padding:3px 2px">${i + 1}</td>
+        <td style="padding:3px 6px">${p.name}</td>
+        <td style="padding:3px 2px">${p.nip}</td>
+        <td style="text-align:center;padding:3px 2px">${p.status.toUpperCase()}</td>
+        <td style="padding:3px 2px">${p.keterangan || ''}</td>
+      </tr>`;
+    });
+
+    const legendDiv = document.querySelector('#page-report table+div div:last-child');
+    if (legendDiv) {
+      const c = d.counts;
+      legendDiv.innerHTML = `HADIR : ${c.hadir || 0} &nbsp; LP : ${c.lp || 0} &nbsp; S : ${c.s || 0} &nbsp; TK : ${c.tk || 0} &nbsp; I : ${c.i || 0}<br>DL : ${c.dl || 0} &nbsp; C : ${c.c || 0}`;
+    }
+
+    document.querySelector('.app').style.display = 'none';
+    document.getElementById('page-report').style.display = 'block';
+    document.getElementById('page-report').classList.add('active');
+    window.scrollTo(0, 0);
+  } catch (e) {
+    showToast('Gagal memuat laporan: ' + e.message);
+  }
+}
+
+function tutupLaporan() {
+  document.getElementById('page-report').style.display = '';
+  document.getElementById('page-report').classList.remove('active');
+  document.querySelector('.app').style.display = '';
+  showPage('page-satops');
+}
+
+// Auto-login if token exists
+if (token) {
+  api('/auth/me').then(d => {
+    currentUser = d.user;
+    localStorage.setItem('simpel_user', JSON.stringify(d.user));
+    if (currentUser.role === 'pegawai') masukPegawai(currentUser);
+    else masukSatops(currentUser);
+  }).catch(() => {
+    // Token invalid — clear and stay on login
+    localStorage.removeItem('simpel_token');
+    localStorage.removeItem('simpel_user');
+    token = null;
+  });
+}
+
+function initEventHandlers() {
+  // Login
+  document.getElementById('btn-login').addEventListener('click', handleLogin);
+  document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin() });
+  document.getElementById('nip').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('password').focus() });
+
+  // Login dropdowns — pilih nama isi NIP
+  document.getElementById('pegawai-select').addEventListener('change', function() {
+    document.getElementById('nip').value = this.value;
+  });
+  document.getElementById('satops-select').addEventListener('change', function() {
+    document.getElementById('nip').value = this.value;
+  });
+
+  // Logout
+  document.getElementById('btn-logout-pegawai').addEventListener('click', handleLogout);
+  document.getElementById('btn-logout-satops').addEventListener('click', handleLogout);
+
+  // Pegawai: sesi pills
+  document.getElementById('pill-pagi').addEventListener('click', () => pilihSesi('pagi'));
+  document.getElementById('pill-sore').addEventListener('click', () => pilihSesi('sore'));
+
+  // Pegawai: refresh QR, GPS toggle
+  document.getElementById('btn-refresh-qr').addEventListener('click', refreshQR);
+  document.getElementById('gps-toggle').addEventListener('click', toggleGPS);
+
+  // Satops: sesi pills
+  document.querySelectorAll('#satops-session .pill').forEach((btn, i) => {
+    btn.addEventListener('click', () => satopsPilihSesi(i === 0 ? 'pagi' : 'sore'));
+  });
+
+  // Satops: pembina input — save on blur
+  document.getElementById('pembina-input').addEventListener('blur', simpanPembina);
+
+  // Satops: GPS toggle, scan
+  document.getElementById('gps-toggle2').addEventListener('click', toggleGPS);
+  document.getElementById('btn-camera-scan').addEventListener('click', startCameraScan);
+  document.getElementById('btn-stop-scanner').addEventListener('click', stopCameraScan);
+
+  // Satops: status list — toggle open
+  document.getElementById('status-list-section').addEventListener('toggle', function() {
+    if (this.open) muatStatusList();
+  });
+
+  // Satops: search filter
+  document.getElementById('status-search').addEventListener('input', filterStatusList);
+
+  // Satops: status select delegation
+  document.getElementById('status-list-container').addEventListener('change', function(e) {
+    const sel = e.target.closest('select');
+    if (!sel) return;
+    const name = sel.getAttribute('name');
+    if (!name || !name.startsWith('status_')) return;
+    const nip = name.replace('status_', '');
+    aturStatus(nip, sel.value);
+  });
+
+  // Satops: cetak laporan
+  document.getElementById('btn-cetak').addEventListener('click', cetakLaporan);
+
+  // Detail back
+  document.getElementById('btn-back-detail').addEventListener('click', goBack);
+
+  // Success back
+  document.getElementById('btn-kembali-success').addEventListener('click', goBack);
+
+  // Report: cetak PDF & tutup
+  document.getElementById('btn-cetak-pdf').addEventListener('click', () => window.print());
+  document.getElementById('btn-tutup-laporan').addEventListener('click', tutupLaporan);
+
+  // Toggle scan list
+  const toggleScan = document.getElementById('toggle-scan-list');
+  if (toggleScan) {
+    toggleScan.addEventListener('click', function() {
+      const hist = document.getElementById('scan-history');
+      const hidden = hist.style.display === 'none';
+      hist.style.display = hidden ? '' : 'none';
+      this.textContent = hidden ? 'sembunyikan ▴' : 'tampilkan ▾';
+    });
+  }
+}
+
+initEventHandlers();
+</script>
+</body>
+</html>
