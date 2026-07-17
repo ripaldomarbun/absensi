@@ -31,6 +31,7 @@ app.use('/api/pegawai', pegawaiRoutes);
 app.use('/api/satops', satopsRoutes);
 
 app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

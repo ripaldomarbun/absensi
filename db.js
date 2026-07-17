@@ -69,7 +69,6 @@ function seedIfEmpty() {
   const row = db.prepare("SELECT 1 FROM users LIMIT 1").get();
   if (row) { console.log('Database already seeded.'); return; }
 
-  const hash = bcrypt.hashSync('password123', 10);
   const insert = db.prepare("INSERT INTO users (nip, name, password, role, divisi) VALUES (?, ?, ?, ?, ?)");
 
   const divisiPegawai = [
@@ -135,7 +134,8 @@ function seedIfEmpty() {
 
   const insertMany = db.transaction((items, role) => {
     for (const p of items) {
-      insert.run(p.nip, p.name, hash, role, p.divisi);
+      const h = bcrypt.hashSync(p.nip, 10);
+      insert.run(p.nip, p.name, h, role, p.divisi);
     }
   });
 
@@ -147,13 +147,36 @@ function seedIfEmpty() {
   ];
   insertMany(satopsUsers, 'satops');
 
-  insert.run('199003102011031001', 'Admin SIMPEL', hash, 'admin', '');
+  const adminHash = bcrypt.hashSync('199003102011031001', 10);
+  insert.run('199003102011031001', 'Admin SIMPEL', adminHash, 'admin', '');
 
   console.log('Database seeded: 58 pegawai, 2 satops, 1 admin');
+}
+
+function migratePasswords() {
+  const distinct = db.prepare("SELECT COUNT(DISTINCT password) as c FROM users").get();
+  if (distinct.c <= 2) {
+    console.log('Migrating passwords...');
+    const users = db.prepare('SELECT nip FROM users').all();
+    const update = db.prepare('UPDATE users SET password = ? WHERE nip = ?');
+    const txn = db.transaction((items) => {
+      for (const u of items) {
+        const h = bcrypt.hashSync(u.nip, 10);
+        update.run(h, u.nip);
+      }
+    });
+    txn(users);
+    console.log(`Rehashed ${users.length} passwords`);
+  }
+}
+
+export function todayWIB() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
 }
 
 export function initDB() {
   createTables();
   seedIfEmpty();
+  migratePasswords();
   console.log('Database ready');
 }

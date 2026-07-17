@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 import { authMiddleware, roleMiddleware } from '../middleware/auth.js';
-import { queryOne, queryAll, run } from '../db.js';
+import { queryOne, queryAll, run, todayWIB } from '../db.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -22,7 +24,7 @@ router.post('/pembina', async (req, res) => {
   try {
     const { sesi, pembina } = req.body;
     if (!sesi || !pembina) return res.status(400).json({ error: 'Sesi dan nama pembina wajib diisi' });
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     let session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2", [today, sesi]);
     if (session) {
       await run("UPDATE sessions SET pembina = $1 WHERE id = $2", [pembina, session.id]);
@@ -40,7 +42,7 @@ router.post('/pembina', async (req, res) => {
 router.get('/pembina', async (req, res) => {
   try {
     const { sesi } = req.query;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     const session = await queryOne("SELECT pembina FROM sessions WHERE tanggal = $1 AND jenis = $2", [today, sesi]);
     res.json({ pembina: session?.pembina || '' });
   } catch (err) {
@@ -57,13 +59,21 @@ router.post('/scan', async (req, res) => {
     let parsed;
     try { parsed = JSON.parse(qrData); } catch { return res.status(400).json({ error: 'QR tidak valid' }); }
 
-    const { nip, sesi, ts } = parsed;
+    const { nip, name, sesi, ts, nonce, sig } = parsed;
+    if (!sig) return res.status(400).json({ error: 'QR tidak valid' });
+
+    const payload = { nip, name, sesi, ts, nonce };
+    const expectedSig = crypto.createHmac('sha256', process.env.JWT_SECRET)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+    if (sig !== expectedSig) return res.status(400).json({ error: 'QR tidak valid' });
+
     if (Date.now() - ts > 60000) return res.status(400).json({ error: 'QR sudah expired' });
 
     const pegawai = await queryOne("SELECT * FROM users WHERE nip = $1 AND role = 'pegawai'", [nip]);
     if (!pegawai) return res.status(400).json({ error: 'Pegawai tidak ditemukan' });
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     let session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2 AND active = 1", [today, sesi]);
     if (!session) {
       const id = uuidv4();
@@ -86,7 +96,7 @@ router.post('/scan', async (req, res) => {
       success: true,
       record: {
         id: scanId, nip, name: pegawai.name,
-        scan_time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+        scan_time: new Date().toISOString(),
       },
     });
   } catch (err) {
@@ -98,7 +108,7 @@ router.post('/scan', async (req, res) => {
 router.get('/scan-log', async (req, res) => {
   try {
     const sesi = req.query.sesi || 'pagi';
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     const session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2 AND active = 1", [today, sesi]);
     if (!session) return res.json({ scanLog: [] });
 
@@ -120,7 +130,7 @@ router.post('/self-scan', async (req, res) => {
     const { sesi } = req.body;
     if (!sesi) return res.status(400).json({ error: 'Sesi wajib diisi' });
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     let session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2 AND active = 1", [today, sesi]);
     if (!session) {
       const id = uuidv4();
@@ -148,8 +158,9 @@ router.post('/self-scan', async (req, res) => {
 router.get('/laporan', async (req, res) => {
   try {
     const sesi = req.query.sesi || 'pagi';
-    const today = new Date().toISOString().slice(0, 10);
-    const session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2 AND active = 1", [today, sesi]);
+    const today = todayWIB();
+    const tanggal = req.query.tanggal || today;
+    const session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2 AND active = 1", [tanggal, sesi]);
     const semuaPegawai = await queryAll("SELECT nip, name, divisi FROM users WHERE role IN ('pegawai', 'satops') ORDER BY divisi, name");
     const hadirList = session
       ? await queryAll("SELECT a.nip, a.scan_time, a.status, a.keterangan FROM attendance a WHERE a.session_id = $1", [session.id])
@@ -165,7 +176,7 @@ router.get('/laporan', async (req, res) => {
     const counts = { total: semuaPegawai.length };
     laporan.forEach(p => { const s = p.status || 'TK'; counts[s.toLowerCase()] = (counts[s.toLowerCase()] || 0) + 1; });
 
-    res.json({ tanggal: today, sesi, pembina: session?.pembina || '', laporan, counts, session: session || null });
+    res.json({ tanggal, sesi, pembina: session?.pembina || '', laporan, counts, session: session || null });
   } catch (err) {
     console.error('Laporan error:', err);
     res.status(500).json({ error: 'Terjadi kesalahan server' });
@@ -175,7 +186,7 @@ router.get('/laporan', async (req, res) => {
 router.get('/status-list', async (req, res) => {
   try {
     const sesi = req.query.sesi || 'pagi';
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     const session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2", [today, sesi]);
     const semua = await queryAll("SELECT nip, name, divisi FROM users WHERE role IN ('pegawai', 'satops') ORDER BY divisi, name");
     const attList = session ? await queryAll("SELECT nip, status, keterangan FROM attendance WHERE session_id = $1", [session.id]) : [];
@@ -195,7 +206,7 @@ router.post('/set-status', async (req, res) => {
     const { nip, sesi, status, keterangan } = req.body;
     if (!nip || !sesi) return res.status(400).json({ error: 'NIP dan sesi wajib diisi' });
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayWIB();
     let session = await queryOne("SELECT * FROM sessions WHERE tanggal = $1 AND jenis = $2", [today, sesi]);
     if (!session) {
       const id = uuidv4();
@@ -216,6 +227,65 @@ router.post('/set-status', async (req, res) => {
     res.json({ success: true, nip, status: status || 'TK' });
   } catch (err) {
     console.error('Set status error:', err);
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+// CRUD Pegawai
+router.post('/pegawai', async (req, res) => {
+  try {
+    const { nip, name, divisi, password } = req.body;
+    if (!nip || !name || !divisi) return res.status(400).json({ error: 'NIP, nama, dan divisi wajib diisi' });
+    if (!/^\d{15,20}$/.test(nip)) return res.status(400).json({ error: 'NIP harus 15-20 digit angka' });
+
+    const existing = await queryOne("SELECT 1 FROM users WHERE nip = $1", [nip]);
+    if (existing) return res.status(409).json({ error: 'NIP sudah terdaftar' });
+
+    const hash = bcrypt.hashSync(password || nip, 10);
+    await run("INSERT INTO users (nip, name, password, role, divisi) VALUES ($1, $2, $3, 'pegawai', $4)",
+      [nip, name.toUpperCase(), hash, divisi]);
+
+    res.json({ success: true, message: 'Pegawai berhasil ditambahkan' });
+  } catch (err) {
+    console.error('Tambah pegawai error:', err);
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+router.put('/pegawai/:nip', async (req, res) => {
+  try {
+    const { name, divisi } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nama wajib diisi' });
+
+    const existing = await queryOne("SELECT 1 FROM users WHERE nip = $1 AND role = 'pegawai'", [req.params.nip]);
+    if (!existing) return res.status(404).json({ error: 'Pegawai tidak ditemukan' });
+
+    if (divisi !== undefined) {
+      await run("UPDATE users SET name = $1, divisi = $2 WHERE nip = $3",
+        [name.toUpperCase(), divisi, req.params.nip]);
+    } else {
+      await run("UPDATE users SET name = $1 WHERE nip = $2",
+        [name.toUpperCase(), req.params.nip]);
+    }
+
+    res.json({ success: true, message: 'Pegawai berhasil diubah' });
+  } catch (err) {
+    console.error('Edit pegawai error:', err);
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+router.delete('/pegawai/:nip', async (req, res) => {
+  try {
+    const existing = await queryOne("SELECT 1 FROM users WHERE nip = $1 AND role = 'pegawai'", [req.params.nip]);
+    if (!existing) return res.status(404).json({ error: 'Pegawai tidak ditemukan' });
+
+    await run("DELETE FROM attendance WHERE nip = $1", [req.params.nip]);
+    await run("DELETE FROM users WHERE nip = $1", [req.params.nip]);
+
+    res.json({ success: true, message: 'Pegawai berhasil dihapus' });
+  } catch (err) {
+    console.error('Hapus pegawai error:', err);
     res.status(500).json({ error: 'Terjadi kesalahan server' });
   }
 });

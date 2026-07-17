@@ -9,8 +9,6 @@ if (!process.env.DATABASE_URL) {
 }
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const hash = bcrypt.hashSync('password123', 10);
-
 const divisiPegawai = [
   { nip: '198306122005012004', name: 'Dewi Sartika', divisi: 'KPLP' },
   { nip: '198407182005011005', name: 'Eko Prasetyo', divisi: 'KPLP' },
@@ -76,9 +74,10 @@ async function seed() {
   console.log('Connecting...');
 
   for (const p of divisiPegawai) {
+    const h = bcrypt.hashSync(p.nip, 10);
     await pool.query(
       "INSERT INTO users (nip, name, password, role, divisi) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (nip) DO NOTHING",
-      [p.nip, p.name, hash, 'pegawai', p.divisi]
+      [p.nip, p.name, h, 'pegawai', p.divisi]
     );
   }
   console.log('61 pegawai done');
@@ -91,16 +90,18 @@ async function seed() {
     { nip: '198912192005021005', name: 'Eka Fitriani', divisi: 'Satops Patnal' },
   ];
   for (const s of satopsUsers) {
+    const h = bcrypt.hashSync(s.nip, 10);
     await pool.query(
       "INSERT INTO users (nip, name, password, role, divisi) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (nip) DO NOTHING",
-      [s.nip, s.name, hash, 'satops', s.divisi]
+      [s.nip, s.name, h, 'satops', s.divisi]
     );
   }
   console.log('5 satops done');
 
+  const adminHash = bcrypt.hashSync('199003102011031001', 10);
   await pool.query(
     "INSERT INTO users (nip, name, password, role, divisi) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (nip) DO NOTHING",
-    ['199003102011031001', 'Admin SIMPEL', hash, 'admin', '']
+    ['199003102011031001', 'Admin SIMPEL', adminHash, 'admin', '']
   );
   console.log('1 admin done');
 
