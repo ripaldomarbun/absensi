@@ -76,6 +76,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .mb-6{margin-bottom:24px}
 .gap-3{gap:12px}
 @media(max-width:420px){.qr-code{width:200px;height:200px}}
+.tab-group{display:flex;gap:0;margin-bottom:10px;background:#fff;border-radius:10px;padding:3px}
+.tab-btn{flex:1;height:36px;border:none;border-radius:8px;background:transparent;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;color:#6B7280}
+.tab-btn.active{background:#810B38;color:#fff;box-shadow:0 2px 6px rgba(129,11,56,.2)}
+.bar-label{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-label span:first-child{width:78px;font-size:12px;color:#6B7280;flex-shrink:0}
+.bar-track{flex:1;height:18px;background:#F1E2D1;border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:width .8s ease;min-width:0}
+.bar-count{width:32px;text-align:right;font-size:12px;font-weight:600;color:#541A1A}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;animation:fadeIn .15s ease}
+.modal-card{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal-card h3{font-size:16px;font-weight:700;color:#541A1A;margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions .btn{height:42px;font-size:13px;border-radius:10px}
+.pegawai-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);font-size:13px}
+.pegawai-row .info{flex:1;min-width:0}
+.pegawai-row .info .name{font-weight:600;color:#541A1A;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pegawai-row .info .meta{font-size:10px;color:#6B7280}
+.pegawai-row .actions{display:flex;gap:4px;flex-shrink:0}
+.pegawai-row .actions button{width:30px;height:30px;border:none;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .1s}
+.pegawai-row .actions button:active{transform:scale(.92)}
+.pegawai-row .actions .btn-edit{background:#F1E2D1;color:#810B38}
+.pegawai-row .actions .btn-del{background:#FDECEE;color:#E8505B}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -83,6 +105,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <body>
 <div class="app" id="app">
 <div id="toast" class="toast"></div>
+
+<!-- Change Password modal -->
+<div id="modal-pw-overlay" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <h3>🔑 Ubah Password</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">Password Lama <span style="color:#E8505B">*</span></label>
+        <input type="password" id="pw-old" placeholder="Masukkan password lama" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;color:#541A1A;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">Password Baru <span style="color:#E8505B">*</span></label>
+        <input type="password" id="pw-new" placeholder="Minimal 6 karakter" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;color:#541A1A;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">Konfirmasi Password Baru <span style="color:#E8505B">*</span></label>
+        <input type="password" id="pw-confirm" placeholder="Ulangi password baru" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;color:#541A1A;box-sizing:border-box">
+      </div>
+      <p id="pw-error" style="font-size:12px;color:#E8505B;display:none"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="pw-batal" style="flex:1">Batal</button>
+      <button class="btn btn-primary" id="pw-simpan" style="flex:2">Simpan</button>
+    </div>
+  </div>
+</div>
 
 <!-- LOGIN -->
 <div id="page-login" class="page active">
@@ -109,25 +157,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
       </div>
       <div class="input-group">
         <label>Password</label>
-        <input type="password" id="password" placeholder="Masukkan password" value="password123">
+        <input type="password" id="password" placeholder="Masukkan password" value="">
       </div>
       <button class="btn btn-primary mt-2" id="btn-login">Masuk</button>
-      <p style="text-align:center;font-size:12px;color:#6B7280">Password: <b>password123</b> · Admin: NIP <b>199003102011031001</b></p>
+      <p style="text-align:center;font-size:12px;color:#6B7280">🔑 Password = NIP masing-masing · Admin: NIP <b>199003102011031001</b></p>
     </div>
   </div>
 </div>
 
 <!-- PEGAWAI: QR DISPLAY -->
 <div id="page-pegawai" class="page">
-  <div class="header">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:40px;height:40px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:32px;height:32px;object-fit:contain"></div>
-      <div>
-        <p style="font-size:12px;color:#6B7280" id="pegawai-greeting">Selamat pagi,</p>
-        <p style="font-size:18px;font-weight:700;color:#810B38" id="pegawai-name">Rafi</p>
+  <div style="background:linear-gradient(135deg,#06213E,#0D3B66);border-radius:14px;padding:14px 16px;margin-bottom:12px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(241,191,96,.08);pointer-events:none"></div>
+    <div style="position:absolute;bottom:-30px;left:-10px;width:60px;height:60px;border-radius:50%;background:rgba(241,191,96,.06);pointer-events:none"></div>
+    <div style="display:flex;align-items:center;gap:10px;position:relative;z-index:1">
+      <div style="width:38px;height:38px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:28px;height:28px;object-fit:contain"></div>
+      <div style="flex:1">
+        <p style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.5px;text-transform:uppercase" id="pegawai-greeting">Selamat pagi,</p>
+        <p style="font-size:16px;font-weight:700;color:#fff;line-height:1.2" id="pegawai-name">Rafi</p>
       </div>
+      <button id="btn-change-pw-pegawai" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;padding:6px 12px;border-radius:8px">🔑</button>
+      <button id="btn-logout-pegawai" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;padding:6px 12px;border-radius:8px">Keluar</button>
     </div>
-    <button id="btn-logout-pegawai" style="background:none;border:none;font-size:13px;color:#E8505B;cursor:pointer;padding:4px">Keluar</button>
   </div>
 
   <div class="pill-group" id="session-pills">
@@ -172,10 +223,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <span class="gps-chip success" id="satops-gps" style="font-size:9px;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,.15);color:#4ADE80;border:1px solid rgba(34,197,94,.3)">📍 Dalam area</span>
-        <button id="btn-logout-satops" style="background:rgba(255,255,255,.1);border:none;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;padding:4px 8px;border-radius:6px">✕</button>
       </div>
     </div>
   </div>
+
+  <!-- Tab: Absensi / Rekap -->
+  <div class="tab-group">
+    <button class="tab-btn active" id="tab-absensi">📋 Absensi</button>
+    <button class="tab-btn" id="tab-rekap">📊 Rekap</button>
+    <button class="tab-btn" id="tab-kelola">👥 Kelola</button>
+  </div>
+
+  <!-- Absensi tab content -->
+  <div id="satops-absensi-content">
 
   <!-- Session & Pembina row -->
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
@@ -239,8 +299,130 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
     </div>
   </details>
 
-  <!-- Print button at bottom -->
+  </div> <!-- /satops-absensi-content -->
+
+  <!-- Rekap tab content -->
+  <div id="satops-rekap-content" style="display:none">
+    <!-- Date header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <p style="font-size:16px;font-weight:700;color:#541A1A" id="rekap-tanggal"></p>
+        <input type="date" id="rekap-date" style="font-size:13px;padding:4px 8px;border:1px solid #DCC3AA;border-radius:8px;outline:none;color:#541A1A;background:#fff;margin-top:4px">
+      </div>
+      <div style="width:64px;height:64px;border-radius:50%;background:#F1E2D1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #DCC3AA">
+        <span style="font-size:22px;font-weight:700;color:#810B38" id="rekap-hadir-pct">0%</span>
+        <span style="font-size:9px;color:#6B7280">hadir</span>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1;text-align:center;background:#fff;border-radius:10px;padding:12px 6px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+        <p style="font-size:22px;font-weight:700;color:#541A1A" id="rekap-total">-</p>
+        <p style="font-size:10px;color:#6B7280;margin-top:2px">Total Pegawai</p>
+      </div>
+      <div style="flex:1;text-align:center;background:#fff;border-radius:10px;padding:12px 6px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+        <p style="font-size:22px;font-weight:700;color:#22C55E" id="rekap-hadir">-</p>
+        <p style="font-size:10px;color:#6B7280;margin-top:2px">✅ Hadir</p>
+      </div>
+      <div style="flex:1;text-align:center;background:#fff;border-radius:10px;padding:12px 6px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+        <p style="font-size:22px;font-weight:700;color:#E8505B" id="rekap-tidak-hadir">-</p>
+        <p style="font-size:10px;color:#6B7280;margin-top:2px">❌ Tidak Hadir</p>
+      </div>
+    </div>
+
+    <!-- Status breakdown -->
+    <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+      <p style="font-size:13px;font-weight:600;color:#541A1A;margin-bottom:10px">Rincian Status</p>
+      <div id="rekap-breakdown"></div>
+    </div>
+
+    <!-- Session comparison -->
+    <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+      <p style="font-size:13px;font-weight:600;color:#541A1A;margin-bottom:10px">Per Sesi</p>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1;padding:12px 8px;border-radius:8px;border:1px solid #DCC3AA;text-align:center">
+          <p style="font-size:11px;color:#6B7280">☀️ Pagi</p>
+          <p style="font-size:20px;font-weight:700;color:#810B38;margin-top:4px"><span id="rekap-pagi-hadir">0</span><span style="color:#DCC3AA;font-weight:400">/</span><span id="rekap-pagi-total">0</span></p>
+        </div>
+        <div style="flex:1;padding:12px 8px;border-radius:8px;border:1px solid #DCC3AA;text-align:center">
+          <p style="font-size:11px;color:#6B7280">🌙 Sore</p>
+          <p style="font-size:20px;font-weight:700;color:#810B38;margin-top:4px"><span id="rekap-sore-hadir">0</span><span style="color:#DCC3AA;font-weight:400">/</span><span id="rekap-sore-total">0</span></p>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-outline" id="btn-cetak-rekap" style="height:38px;font-size:13px;border-radius:10px;margin-top:6px">🖨️ Cetak Laporan</button>
+  </div> <!-- /satops-rekap-content -->
+
+  <!-- Kelola tab content -->
+  <div id="satops-kelola-content" style="display:none">
+    <div style="background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input type="text" id="kelola-search" placeholder="🔍 Cari NIP atau nama..." style="flex:1;padding:8px 12px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;background:#F9F5F0;color:#541A1A;box-sizing:border-box">
+        <button id="btn-tambah-pegawai" style="height:36px;padding:0 14px;background:#810B38;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">+ Tambah</button>
+      </div>
+      <div id="kelola-list" style="display:flex;flex-direction:column;gap:4px;max-height:460px;overflow-y:auto">
+        <div class="text-center" style="padding:16px;color:#6B7280;font-size:13px">⏳ Memuat data...</div>
+      </div>
+      <p style="font-size:11px;color:#6B7280;margin-top:8px;text-align:center" id="kelola-count"></p>
+    </div>
+  </div> <!-- /satops-kelola-content -->
+
+  <!-- Modal overlay (hidden by default) -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none">
+    <div class="modal-card">
+      <h3 id="modal-title">Tambah Pegawai</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">NIP <span style="color:#E8505B">*</span></label>
+          <input type="text" id="modal-nip" placeholder="15-20 digit angka" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;color:#541A1A;box-sizing:border-box" inputmode="numeric">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">Nama <span style="color:#E8505B">*</span></label>
+          <input type="text" id="modal-name" placeholder="Nama lengkap" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;color:#541A1A;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">Divisi <span style="color:#E8505B">*</span></label>
+          <select id="modal-divisi" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;background:#fff;color:#541A1A;box-sizing:border-box">
+            <option value="">— Pilih Divisi —</option>
+            <option value="Pimpinan">Pimpinan</option>
+            <option value="Pengelolaan">Pengelolaan</option>
+            <option value="KPR">KPR</option>
+            <option value="Peltah">Peltah</option>
+            <option value="Bimgiat">Bimgiat</option>
+          </select>
+        </div>
+        <div id="modal-password-group">
+          <label style="font-size:12px;font-weight:500;color:#6B7280;display:block;margin-bottom:3px">Password</label>
+          <input type="text" id="modal-password" placeholder="Kosongkan = pakai NIP" style="width:100%;padding:8px 10px;border:1px solid #DCC3AA;border-radius:8px;font-size:13px;outline:none;color:#541A1A;box-sizing:border-box">
+          <p style="font-size:10px;color:#6B7280;margin-top:2px">Default: sama dengan NIP</p>
+        </div>
+        <p id="modal-error" style="font-size:12px;color:#E8505B;display:none"></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modal-batal" style="flex:1">Batal</button>
+        <button class="btn btn-primary" id="modal-simpan" style="flex:2">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div id="modal-del-overlay" class="modal-overlay" style="display:none">
+    <div class="modal-card" style="text-align:center">
+      <p style="font-size:40px;margin-bottom:8px">🗑️</p>
+      <h3 style="font-size:16px;font-weight:700;color:#541A1A;margin-bottom:6px">Hapus Pegawai?</h3>
+      <p style="font-size:13px;color:#6B7280;margin-bottom:4px" id="modal-del-name">-</p>
+      <p style="font-size:11px;color:#E8505B" id="modal-del-nip"></p>
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn btn-outline" id="modal-del-batal" style="flex:1">Batal</button>
+        <button class="btn btn-danger" id="modal-del-konfirm" style="flex:1">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print button at bottom (shown only when absensi tab active) -->
   <button class="btn btn-outline" id="btn-cetak" style="height:38px;font-size:13px;border-radius:10px;margin-top:6px">🖨️ Cetak Laporan</button>
+  <button id="btn-logout-satops" style="width:100%;height:44px;border:1.5px solid #DCC3AA;border-radius:10px;background:#fff;font-size:14px;font-weight:600;color:#E8505B;cursor:pointer;padding:0;margin-top:6px">✕ Keluar</button>
 </div>
 
 <!-- DETAIL -->
@@ -490,7 +672,7 @@ function api(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json', ...opts.headers };
   if (token) headers['Authorization'] = 'Bearer ' + token;
   return fetch(API_BASE + path, { ...opts, headers }).then(r => {
-    if (r.status === 401) { localStorage.removeItem('simpel_token'); token = null; handleLogout(); throw new Error('Sesi habis'); }
+    if (r.status === 401 && path !== '/auth/login') { localStorage.removeItem('simpel_token'); token = null; handleLogout(); throw new Error('Sesi habis'); }
     return r.json().then(d => { if (d.error) throw new Error(d.error); return d; });
   });
 }
@@ -519,6 +701,12 @@ function formatDate(d) {
 
 function formatTime(d) {
   return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+}
+
+function fmtWIB(utcStr) {
+  if (!utcStr) return '';
+  const d = new Date(utcStr + (utcStr.includes('Z') || utcStr.includes('+') ? '' : 'Z'));
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
 }
 
 function labelStatus(s) {
@@ -643,10 +831,11 @@ async function refreshQR() {
       height: 250,
       colorDark: '#541A1A',
       colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
+      correctLevel: QRCode.CorrectLevel.M
     });
-  } catch {
-    container.innerHTML = '<div style="text-align:center;color:#E8505B;padding:40px">❌ Gagal generate QR</div>';
+  } catch (e) {
+    container.innerHTML = '<div style="text-align:center;color:#E8505B;padding:40px">❌ Gagal generate QR: ' + e.message + '</div>';
+    console.error('QR error:', e);
   }
   startTimer();
 }
@@ -675,6 +864,7 @@ async function masukSatops(user) {
   sesiAktif = 'pagi';
   document.getElementById('satops-name').textContent = user.name;
   document.getElementById('sesi-label').textContent = 'Apel Pagi';
+  document.getElementById('rekap-date').value = new Date().toISOString().slice(0, 10);
   scanLog = []; scannedPegawai = {};
   try {
     const d = await api('/satops/pegawai-list');
@@ -839,7 +1029,7 @@ async function onQrDetected(decodedText) {
       method: 'POST',
       body: JSON.stringify({ qrData: decodedText, gps_ok: pegawaiGpsOk && satopsGpsOk })
     });
-    showScanToast('ok', `${parsed.name || nip} — ${d.record.scan_time}`);
+    showScanToast('ok', parsed.name || nip, d.record.scan_time);
     fetchScanLog();
     fetchPegawaiHistory();
   } catch (e) {
@@ -880,7 +1070,7 @@ function updateScanUI() {
   list.innerHTML = scanLog.map(r => {
     const isHadir = (r.status || '').toLowerCase() === 'hadir';
     const icon = isHadir ? '✅' : (labelStatus(r.status) || '📝');
-    const time = r.scan_time ? r.scan_time.slice(11,16) + ' WIB' : (isHadir ? '' : labelStatus(r.status));
+    const time = r.scan_time ? fmtWIB(r.scan_time) : (isHadir ? '' : labelStatus(r.status));
     return `<div class="row" style="padding:6px 0">
       <div style="width:28px;height:28px;border-radius:6px;background:${isHadir ? '#F1E2D1' : '#FEE2E2'};display:flex;align-items:center;justify-content:center;font-size:14px">${icon}</div>
       <div style="flex:1;min-width:0">
@@ -892,9 +1082,8 @@ function updateScanUI() {
   }).join('');
 }
 
-function showScanToast(type, msg) {
+function showScanToast(type, name, scanTime) {
   if (type === 'ok') {
-    const name = msg.split('—')[0].trim();
     const overlay = document.getElementById('scan-success-overlay') || (() => {
       const el = document.createElement('div');
       el.id = 'scan-success-overlay';
@@ -906,9 +1095,9 @@ function showScanToast(type, msg) {
     overlay.querySelector('.scan-check-name').textContent = name;
     overlay.classList.remove('hide');
     overlay.classList.add('show');
-    setTimeout(() => overlay.classList.add('hide'), 1000);
+    setTimeout(() => { overlay.classList.remove('show'); overlay.classList.add('hide'); }, 1000);
   }
-  showToast(type === 'ok' ? '✅ ' + msg : '❌ ' + msg);
+  showToast(type === 'ok' ? '✅ ' + name + ' — ' + fmtWIB(scanTime) : '❌ ' + name);
 }
 
 function updatePegawaiHistoryUI() {
@@ -921,18 +1110,20 @@ function updatePegawaiHistoryUI() {
   list.innerHTML = myLog.map(r =>
     `<div class="card-sm" style="display:flex;align-items:center;gap:10px">
       <div style="width:36px;height:36px;border-radius:8px;background:#F1E2D1;display:flex;align-items:center;justify-content:center;font-size:16px">✅</div>
-      <div style="flex:1"><p style="font-weight:600;font-size:13px">${r.sesi_jenis === 'pagi' ? '☀️ Apel Pagi' : '🌙 Apel Sore'}</p><p style="font-size:11px;color:#6B7280">${r.scan_time ? r.scan_time.slice(11,16) : ''} WIB</p></div>
+      <div style="flex:1"><p style="font-weight:600;font-size:13px">${r.sesi_jenis === 'pagi' ? '☀️ Apel Pagi' : '🌙 Apel Sore'}</p><p style="font-size:11px;color:#6B7280">${r.scan_time ? fmtWIB(r.scan_time) : ''}</p></div>
     </div>`
   ).join('');
 }
 
 async function cetakLaporan() {
   try {
-    const d = await api('/satops/laporan?sesi=' + sesiAktif);
-    const now = new Date();
+    const tgl = document.getElementById('rekap-date').value;
+    const d = await api('/satops/laporan?sesi=' + sesiAktif + (tgl ? '&tanggal=' + tgl : ''));
+    const tglVal = document.getElementById('rekap-date').value;
+    const rekapDate = tglVal ? new Date(tglVal + 'T00:00:00') : new Date();
     const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    document.getElementById('rpt-tanggal').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('rpt-tanggal').textContent = `${days[rekapDate.getDay()]}, ${rekapDate.getDate()} ${months[rekapDate.getMonth()]} ${rekapDate.getFullYear()}`;
     document.getElementById('rpt-sesi').textContent = d.sesi === 'pagi' ? 'Apel Pagi' : 'Apel Sore';
     document.getElementById('rpt-pembina').textContent = d.pembina || '_________________';
 
@@ -970,6 +1161,220 @@ function tutupLaporan() {
   showPage('page-satops');
 }
 
+// ===== DASHBOARD REKAP =====
+async function fetchRekap() {
+  try {
+    document.getElementById('rekap-breakdown').innerHTML =
+      '<div style="text-align:center;padding:12px;color:#6B7280;font-size:12px">⏳ Memuat data...</div>';
+
+    const tgl = document.getElementById('rekap-date').value;
+    const [pagi, sore] = await Promise.all([
+      api('/satops/laporan?sesi=pagi' + (tgl ? '&tanggal=' + tgl : '')),
+      api('/satops/laporan?sesi=sore' + (tgl ? '&tanggal=' + tgl : ''))
+    ]);
+
+    const all = [...(pagi.laporan || []), ...(sore.laporan || [])];
+    const total = all.length;
+
+    // Deduplicate by NIP (prefer 'hadir' over 'TK')
+    const byNip = {};
+    all.forEach(p => {
+      const existing = byNip[p.nip];
+      if (!existing || (existing.status === 'TK' && p.status !== 'TK')) {
+        byNip[p.nip] = p;
+      }
+    });
+    const unique = Object.values(byNip);
+    const uniqueTotal = unique.length;
+
+    // Count statuses
+    const counts = { HADIR: 0, S: 0, I: 0, C: 0, DL: 0, LP: 0, TK: 0 };
+    unique.forEach(p => {
+      const s = (p.status || 'TK').toUpperCase();
+      counts[s] = (counts[s] || 0) + 1;
+    });
+
+    const hadir = counts.HADIR || 0;
+    const tidakHadir = uniqueTotal - hadir;
+    const pct = uniqueTotal > 0 ? Math.round(hadir / uniqueTotal * 100) : 0;
+
+    // Update date
+    const tglVal = document.getElementById('rekap-date').value;
+    const rekapDate = tglVal ? new Date(tglVal + 'T00:00:00') : new Date();
+    const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    document.getElementById('rekap-tanggal').textContent =
+      `${days[rekapDate.getDay()]}, ${rekapDate.getDate()} ${months[rekapDate.getMonth()]} ${rekapDate.getFullYear()}`;
+
+    document.getElementById('rekap-total').textContent = uniqueTotal;
+    document.getElementById('rekap-hadir').textContent = hadir;
+    document.getElementById('rekap-tidak-hadir').textContent = tidakHadir;
+    document.getElementById('rekap-hadir-pct').textContent = pct + '%';
+
+    // Status breakdown bars
+    const statuses = [
+      { key: 'HADIR', label: 'Hadir', color: '#22C55E' },
+      { key: 'S', label: 'Sakit', color: '#F59E0B' },
+      { key: 'I', label: 'Izin', color: '#3B82F6' },
+      { key: 'C', label: 'Cuti', color: '#8B5CF6' },
+      { key: 'DL', label: 'Dinas Luar', color: '#06B6D4' },
+      { key: 'LP', label: 'Lepas Piket', color: '#EC4899' },
+      { key: 'TK', label: 'Tanpa Ket.', color: '#9CA3AF' },
+    ];
+
+    document.getElementById('rekap-breakdown').innerHTML = statuses.map(s => {
+      const c = counts[s.key] || 0;
+      const w = uniqueTotal > 0 ? (c / uniqueTotal * 100) : 0;
+      return `<div class="bar-label">
+        <span>${s.label}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${s.color}"></div></div>
+        <span class="bar-count">${c}</span>
+      </div>`;
+    }).join('');
+
+    // Session comparison
+    document.getElementById('rekap-pagi-hadir').textContent = pagi.counts?.hadir || 0;
+    document.getElementById('rekap-pagi-total').textContent = (pagi.laporan || []).length;
+    document.getElementById('rekap-sore-hadir').textContent = sore.counts?.hadir || 0;
+    document.getElementById('rekap-sore-total').textContent = (sore.laporan || []).length;
+
+  } catch (e) {
+    document.getElementById('rekap-breakdown').innerHTML =
+      '<div style="text-align:center;padding:12px;color:#E8505B;font-size:12px">❌ Gagal muat data</div>';
+  }
+}
+
+// ===== KELOLA PEGAWAI =====
+async function fetchKelola() {
+  const list = document.getElementById('kelola-list');
+  const count = document.getElementById('kelola-count');
+  list.innerHTML = '<div class="text-center" style="padding:16px;color:#6B7280;font-size:13px">⏳ Memuat data...</div>';
+  try {
+    const d = await api('/satops/pegawai-list');
+    const pegawai = d.pegawai || [];
+    window._lastKelolaData = pegawai;
+    count.textContent = `Total: ${pegawai.length} pegawai`;
+    renderKelolaList(pegawai);
+  } catch {
+    list.innerHTML = '<div class="text-center" style="padding:16px;color:#E8505B;font-size:13px">❌ Gagal memuat data</div>';
+  }
+}
+
+function renderKelolaList(pegawai) {
+  const list = document.getElementById('kelola-list');
+  const search = (document.getElementById('kelola-search').value || '').toLowerCase().trim();
+  const filtered = pegawai.filter(p =>
+    !search || p.name.toLowerCase().includes(search) || p.nip.includes(search)
+  );
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="text-center" style="padding:16px;color:#6B7280;font-size:13px">🔍 Pegawai tidak ditemukan</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(p => `
+    <div class="pegawai-row">
+      <div class="info">
+        <div class="name">${p.name}</div>
+        <div class="meta">${p.nip} · ${p.divisi}</div>
+      </div>
+      <div class="actions">
+        <button class="btn-edit" data-nip="${p.nip}" data-name="${p.name.replace(/"/g,'&quot;')}" data-divisi="${p.divisi}" title="Edit">✏️</button>
+        <button class="btn-del" data-nip="${p.nip}" data-name="${p.name.replace(/"/g,'&quot;')}" title="Hapus">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let editNip = null;
+
+function openModalTambah() {
+  editNip = null;
+  document.getElementById('modal-title').textContent = 'Tambah Pegawai';
+  document.getElementById('modal-nip').value = '';
+  document.getElementById('modal-nip').disabled = false;
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-divisi').value = '';
+  document.getElementById('modal-password-group').style.display = '';
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-error').style.display = 'none';
+  document.getElementById('modal-overlay').style.display = '';
+}
+
+function openModalEdit(nip, name, divisi) {
+  editNip = nip;
+  document.getElementById('modal-title').textContent = 'Edit Pegawai';
+  document.getElementById('modal-nip').value = nip;
+  document.getElementById('modal-nip').disabled = true;
+  document.getElementById('modal-name').value = name;
+  document.getElementById('modal-divisi').value = divisi;
+  document.getElementById('modal-password-group').style.display = 'none';
+  document.getElementById('modal-error').style.display = 'none';
+  document.getElementById('modal-overlay').style.display = '';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+  document.getElementById('modal-error').style.display = 'none';
+}
+
+async function simpanPegawai() {
+  const nip = document.getElementById('modal-nip').value.trim();
+  const name = document.getElementById('modal-name').value.trim();
+  const divisi = document.getElementById('modal-divisi').value;
+  const password = document.getElementById('modal-password').value.trim();
+  const error = document.getElementById('modal-error');
+
+  if (!nip || !name || !divisi) {
+    error.textContent = 'NIP, Nama, dan Divisi wajib diisi';
+    error.style.display = '';
+    return;
+  }
+
+  try {
+    if (editNip) {
+      await api('/satops/pegawai/' + editNip, {
+        method: 'PUT',
+        body: JSON.stringify({ name, divisi })
+      });
+      showToast('✅ Pegawai berhasil diubah');
+    } else {
+      await api('/satops/pegawai', {
+        method: 'POST',
+        body: JSON.stringify({ nip, name, divisi, password: password || nip })
+      });
+      showToast('✅ Pegawai berhasil ditambahkan');
+    }
+    closeModal();
+    fetchKelola();
+  } catch (e) {
+    error.textContent = '❌ ' + e.message;
+    error.style.display = '';
+  }
+}
+
+function openModalHapus(nip, name) {
+  document.getElementById('modal-del-name').textContent = name;
+  document.getElementById('modal-del-nip').textContent = 'NIP: ' + nip;
+  document.getElementById('modal-del-overlay').style.display = '';
+  document.getElementById('modal-del-overlay').dataset.nip = nip;
+}
+
+function closeModalHapus() {
+  document.getElementById('modal-del-overlay').style.display = 'none';
+}
+
+async function konfirmHapus() {
+  const nip = document.getElementById('modal-del-overlay').dataset.nip;
+  try {
+    await api('/satops/pegawai/' + nip, { method: 'DELETE' });
+    showToast('🗑️ Pegawai berhasil dihapus');
+    closeModalHapus();
+    fetchKelola();
+  } catch (e) {
+    showToast('❌ ' + e.message);
+    closeModalHapus();
+  }
+}
+
 // Auto-login if token exists
 if (token) {
   api('/auth/me').then(d => {
@@ -1002,6 +1407,52 @@ function initEventHandlers() {
   // Logout
   document.getElementById('btn-logout-pegawai').addEventListener('click', handleLogout);
   document.getElementById('btn-logout-satops').addEventListener('click', handleLogout);
+
+  // Change Password (Pegawai)
+  document.getElementById('btn-change-pw-pegawai').addEventListener('click', () => {
+    document.getElementById('pw-old').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    document.getElementById('pw-error').style.display = 'none';
+    document.getElementById('modal-pw-overlay').style.display = 'flex';
+  });
+  document.getElementById('pw-batal').addEventListener('click', () => {
+    document.getElementById('modal-pw-overlay').style.display = 'none';
+  });
+  document.getElementById('pw-simpan').addEventListener('click', async () => {
+    const oldPw = document.getElementById('pw-old').value.trim();
+    const newPw = document.getElementById('pw-new').value.trim();
+    const confirmPw = document.getElementById('pw-confirm').value.trim();
+    const errEl = document.getElementById('pw-error');
+    errEl.style.display = 'none';
+
+    if (!oldPw || !newPw || !confirmPw) {
+      errEl.textContent = 'Semua field wajib diisi';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (newPw.length < 6) {
+      errEl.textContent = 'Password baru minimal 6 karakter';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (newPw !== confirmPw) {
+      errEl.textContent = 'Konfirmasi password tidak cocok';
+      errEl.style.display = 'block';
+      return;
+    }
+    try {
+      await api('/pegawai/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw })
+      });
+      document.getElementById('modal-pw-overlay').style.display = 'none';
+      showToast('Password berhasil diubah');
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    }
+  });
 
   // Pegawai: sesi pills
   document.getElementById('pill-pagi').addEventListener('click', () => pilihSesi('pagi'));
@@ -1042,8 +1493,74 @@ function initEventHandlers() {
     aturStatus(nip, sel.value);
   });
 
+  // Satops: tab switching
+  document.getElementById('tab-absensi').addEventListener('click', () => {
+    document.getElementById('tab-absensi').classList.add('active');
+    document.getElementById('tab-rekap').classList.remove('active');
+    document.getElementById('tab-kelola').classList.remove('active');
+    document.getElementById('satops-absensi-content').style.display = '';
+    document.getElementById('satops-rekap-content').style.display = 'none';
+    document.getElementById('satops-kelola-content').style.display = 'none';
+    document.getElementById('btn-cetak').style.display = '';
+  });
+  document.getElementById('tab-rekap').addEventListener('click', () => {
+    document.getElementById('tab-rekap').classList.add('active');
+    document.getElementById('tab-absensi').classList.remove('active');
+    document.getElementById('tab-kelola').classList.remove('active');
+    document.getElementById('satops-absensi-content').style.display = 'none';
+    document.getElementById('satops-rekap-content').style.display = '';
+    document.getElementById('satops-kelola-content').style.display = 'none';
+    document.getElementById('btn-cetak').style.display = 'none';
+    fetchRekap();
+  });
+  document.getElementById('tab-kelola').addEventListener('click', () => {
+    document.getElementById('tab-kelola').classList.add('active');
+    document.getElementById('tab-absensi').classList.remove('active');
+    document.getElementById('tab-rekap').classList.remove('active');
+    document.getElementById('satops-absensi-content').style.display = 'none';
+    document.getElementById('satops-rekap-content').style.display = 'none';
+    document.getElementById('satops-kelola-content').style.display = '';
+    document.getElementById('btn-cetak').style.display = 'none';
+    fetchKelola();
+  });
+
   // Satops: cetak laporan
   document.getElementById('btn-cetak').addEventListener('click', cetakLaporan);
+  document.getElementById('btn-cetak-rekap').addEventListener('click', cetakLaporan);
+  document.getElementById('rekap-date').addEventListener('change', fetchRekap);
+
+  // Satops: kelola pegawai
+  document.getElementById('btn-tambah-pegawai').addEventListener('click', openModalTambah);
+  document.getElementById('modal-batal').addEventListener('click', closeModal);
+  document.getElementById('modal-simpan').addEventListener('click', simpanPegawai);
+  document.getElementById('modal-del-batal').addEventListener('click', closeModalHapus);
+  document.getElementById('modal-del-konfirm').addEventListener('click', konfirmHapus);
+  document.getElementById('kelola-search').addEventListener('input', () => {
+    const d = window._lastKelolaData;
+    if (d) renderKelolaList(d);
+  });
+
+  // Satops: kelola delegation (edit/hapus buttons)
+  document.getElementById('kelola-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const nip = btn.dataset.nip;
+    const name = btn.dataset.name;
+    const divisi = btn.dataset.divisi;
+    if (btn.classList.contains('btn-edit') && nip) {
+      openModalEdit(nip, name, divisi);
+    } else if (btn.classList.contains('btn-del') && nip) {
+      openModalHapus(nip, name);
+    }
+  });
+
+  // Close modals on overlay click
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+  document.getElementById('modal-del-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModalHapus();
+  });
 
   // Detail back
   document.getElementById('btn-back-detail').addEventListener('click', goBack);
