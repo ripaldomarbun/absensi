@@ -20,7 +20,8 @@ router.get('/users', async (req, res) => {
     }
     if (search) {
       params.push(`%${search}%`);
-      conditions.push(`(name LIKE $${params.length} OR nip LIKE $${params.length})`);
+      params.push(`%${search}%`);
+      conditions.push(`(name LIKE $${params.length - 1} OR nip LIKE $${params.length})`);
     }
 
     if (conditions.length > 0) {
