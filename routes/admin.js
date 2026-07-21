@@ -15,12 +15,12 @@ router.get('/users', async (req, res) => {
     const conditions = [];
 
     if (role) {
-      conditions.push("role = $1");
       params.push(role);
+      conditions.push(`role = $${params.length}`);
     }
     if (search) {
-      conditions.push("(name LIKE $2 OR nip LIKE $2)");
       params.push(`%${search}%`);
+      conditions.push(`(name LIKE $${params.length} OR nip LIKE $${params.length})`);
     }
 
     if (conditions.length > 0) {
