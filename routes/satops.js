@@ -237,6 +237,8 @@ router.post('/pegawai', async (req, res) => {
     const { nip, name, divisi, password } = req.body;
     if (!nip || !name || !divisi) return res.status(400).json({ error: 'NIP, nama, dan divisi wajib diisi' });
     if (!/^\d{15,20}$/.test(nip)) return res.status(400).json({ error: 'NIP harus 15-20 digit angka' });
+    if (name.length > 200) return res.status(400).json({ error: 'Nama maksimal 200 karakter' });
+    if (password && password.length < 6) return res.status(400).json({ error: 'Password minimal 6 karakter' });
 
     const existing = await queryOne("SELECT 1 FROM users WHERE nip = $1", [nip]);
     if (existing) return res.status(409).json({ error: 'NIP sudah terdaftar' });
@@ -256,6 +258,7 @@ router.put('/pegawai/:nip', async (req, res) => {
   try {
     const { name, divisi } = req.body;
     if (!name) return res.status(400).json({ error: 'Nama wajib diisi' });
+    if (name.length > 200) return res.status(400).json({ error: 'Nama maksimal 200 karakter' });
 
     const existing = await queryOne("SELECT 1 FROM users WHERE nip = $1 AND role = 'pegawai'", [req.params.nip]);
     if (!existing) return res.status(404).json({ error: 'Pegawai tidak ditemukan' });

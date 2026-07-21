@@ -25,10 +25,21 @@ const loginLimiter = rateLimit({
   message: { error: 'Terlalu banyak percobaan login. Coba lagi 15 menit.' },
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 100,
+  message: { error: 'Terlalu banyak request. Coba lagi sebentar.' },
+});
+
 app.use('/api/auth/login', loginLimiter);
+app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/pegawai', pegawaiRoutes);
 app.use('/api/satops', satopsRoutes);
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
