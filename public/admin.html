@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SIMPEL Admin — Rutan Batam</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F1E2D1;display:flex;justify-content:center;min-height:100vh;color:#541A1A}
+.app{width:100%;max-width:480px;min-height:100vh;background:#F1E2D1;position:relative;overflow:hidden}
+.page{display:none;flex-direction:column;min-height:100vh;padding:20px 16px;animation:fadeIn .25s ease}
+.page.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:48px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all .12s;gap:6px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#810B38;color:#fff;box-shadow:0 4px 12px rgba(129,11,56,.25)}
+.btn-primary:hover{background:#6a0a2e}
+.btn-outline{background:transparent;color:#810B38;border:1.5px solid #810B38}
+.btn-outline:hover{background:#DCC3AA}
+.btn-danger{color:#E8505B;border:1.5px solid #E8505B;background:transparent}
+.btn-sm{height:36px;font-size:13px;border-radius:10px;padding:0 14px;width:auto}
+.input-group{display:flex;flex-direction:column;gap:6px}
+.input-group label{font-size:13px;font-weight:500}
+.input-group input,.input-group select{height:48px;border:1.5px solid #DCC3AA;border-radius:10px;padding:0 14px;font-size:15px;outline:none;transition:border-color .15s;background:#fff;color:#541A1A;font-family:inherit}
+.input-group input:focus,.input-group select:focus{border-color:#810B38;box-shadow:0 0 0 3px rgba(129,11,56,.1)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase}
+.badge-admin{background:#810B38;color:#fff}
+.badge-satops{background:#06213E;color:#F1BF60}
+.badge-pegawai{background:#DCC3AA;color:#541A1A}
+.logo-circle{width:72px;height:72px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:28px;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);border:2px solid #F1BF60}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120px);background:#541A1A;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;z-index:999;max-width:360px;width:calc(100% - 32px);text-align:center;transition:transform .3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:#E8505B}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;animation:fadeIn .15s ease}
+.modal-card{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal-card h3{font-size:16px;font-weight:700;color:#541A1A;margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions .btn{height:42px;font-size:13px;border-radius:10px}
+.user-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:background .1s}
+.user-row:hover{background:#faf7f3}
+.user-row .avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.user-row .avatar.admin{background:#810B38;color:#fff}
+.user-row .avatar.satops{background:#06213E;color:#F1BF60}
+.user-row .avatar.pegawai{background:#DCC3AA;color:#541A1A}
+.user-row .info{flex:1;min-width:0}
+.user-row .info .name{font-weight:600;color:#541A1A;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-row .info .meta{font-size:11px;color:#6B7280;margin-top:1px}
+.user-row .actions{display:flex;gap:4px;flex-shrink:0}
+.user-row .actions button{width:32px;height:32px;border:none;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .1s}
+.user-row .actions button:active{transform:scale(.92)}
+.user-row .actions .btn-edit{background:#F1E2D1;color:#810B38}
+.user-row .actions .btn-del{background:#FDECEE;color:#E8505B}
+.user-row .actions .btn-pw{background:#E8F5E9;color:#22C55E}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.header h1{font-size:19px;font-weight:700}
+.stats-row{display:flex;gap:8px;margin-bottom:12px}
+.stat-card{flex:1;text-align:center;background:#fff;border-radius:12px;padding:14px 6px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-card .num{font-size:24px;font-weight:700}
+.stat-card .label{font-size:10px;color:#6B7280;margin-top:2px}
+.empty-state{text-align:center;padding:40px 20px;color:#6B7280}
+.empty-state .icon{font-size:40px;margin-bottom:8px}
+.empty-state p{font-size:13px}
+.flex-row{display:flex;gap:8px}
+.flex-1{flex:1}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mt-4{margin-top:16px}
+.mb-3{margin-bottom:12px}
+.mb-4{margin-bottom:16px}
+.text-center{text-align:center}
+.text-secondary{color:#6B7280}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<div id="toast" class="toast"></div>
+
+<!-- LOGIN -->
+<div id="page-login" class="page active">
+  <div class="flex-1" style="display:flex;flex-direction:column;justify-content:center;gap:24px">
+    <div class="text-center">
+      <div class="logo-circle"><img src="/static/logo_rutan.png" alt="Rutan Batam" style="width:58px;height:58px;object-fit:contain"></div>
+      <h1 style="font-size:20px;font-weight:700;margin-top:14px">SIMPEL Admin</h1>
+      <p style="color:#6B7280;font-size:12px;margin-top:4px">Panel Manajemen Pengguna</p>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div class="input-group">
+        <label>NIP Admin</label>
+        <input type="text" id="login-nip" placeholder="Masukkan NIP Admin" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Masukkan password">
+      </div>
+      <button class="btn btn-primary mt-2" id="btn-login">Masuk</button>
+      <a href="/" style="text-align:center;font-size:12px;color:#6B7280;text-decoration:none">← Kembali ke SIMPEL</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="page-admin" class="page">
+  <div style="background:linear-gradient(135deg,#06213E,#0D3B66);border-radius:14px;padding:14px 16px;margin-bottom:12px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(241,191,96,.08)"></div>
+    <div style="position:absolute;bottom:-30px;left:-10px;width:60px;height:60px;border-radius:50%;background:rgba(241,191,96,.06)"></div>
+    <div style="display:flex;align-items:center;gap:10px;position:relative;z-index:1">
+      <div style="width:38px;height:38px;border-radius:50%;background:#06213E;display:flex;align-items:center;justify-content:center;border:1.5px solid #F1BF60;flex-shrink:0"><img src="/static/logo_rutan.png" alt="" style="width:28px;height:28px;object-fit:contain"></div>
+      <div style="flex:1">
+        <p style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.5px;text-transform:uppercase">Admin Panel</p>
+        <p style="font-size:16px;font-weight:700;color:#fff;line-height:1.2" id="admin-name">Admin SIMPEL</p>
+      </div>
+      <button id="btn-logout" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;padding:6px 12px;border-radius:8px">Keluar</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="num" style="color:#541A1A" id="stat-total">-</div><div class="label">Total</div></div>
+    <div class="stat-card"><div class="num" style="color:#810B38" id="stat-admin">-</div><div class="label">Admin</div></div>
+    <div class="stat-card"><div class="num" style="color:#06213E" id="stat-satops">-</div><div class="label">Satops</div></div>
+    <div class="stat-card"><div class="num" style="color:#D4A843" id="stat-pegawai">-</div><div class="label">Pegawai</div></div>
+  </div>
+
+  <!-- Search & Add -->
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <input type="text" id="search-input" placeholder="🔍 Cari nama atau NIP..." style="flex:1;height:42px;border:1.5px solid #DCC3AA;border-radius:10px;padding:0 14px;font-size:13px;outline:none;background:#fff;color:#541A1A;font-family:inherit">
+    <button class="btn btn-primary btn-sm" id="btn-tambah" style="height:42px;padding:0 16px;white-space:nowrap">+ Tambah</button>
+  </div>
+
+  <!-- Filter -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto">
+    <button class="btn btn-sm btn-outline filter-btn active" data-role="">Semua</button>
+    <button class="btn btn-sm btn-outline filter-btn" data-role="admin">Admin</button>
+    <button class="btn btn-sm btn-outline filter-btn" data-role="satops">Satops</button>
+    <button class="btn btn-sm btn-outline filter-btn" data-role="pegawai">Pegawai</button>
+  </div>
+
+  <!-- User List -->
+  <div id="user-list" style="display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 340px);overflow-y:auto">
+    <div class="empty-state"><div class="icon">⏳</div><p>Memuat data...</p></div>
+  </div>
+  <p style="font-size:11px;color:#6B7280;margin-top:8px;text-align:center" id="user-count"></p>
+</div>
+
+<!-- MODAL: Add/Edit User -->
+<div id="modal-user" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <h3 id="modal-title">Tambah User</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="input-group">
+        <label>NIP <span style="color:#E8505B">*</span></label>
+        <input type="text" id="modal-nip" placeholder="15-20 digit angka" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label>Nama <span style="color:#E8505B">*</span></label>
+        <input type="text" id="modal-name" placeholder="Nama lengkap">
+      </div>
+      <div class="input-group">
+        <label>Role <span style="color:#E8505B">*</span></label>
+        <select id="modal-role">
+          <option value="pegawai">Pegawai</option>
+          <option value="satops">Satops</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Divisi</label>
+        <select id="modal-divisi">
+          <option value="">— Pilih Divisi —</option>
+          <option value="Pimpinan">Pimpinan</option>
+          <option value="Pengelolaan">Pengelolaan</option>
+          <option value="KPR">KPR</option>
+          <option value="Peltah">Peltah</option>
+          <option value="Bimgiat">Bimgiat</option>
+          <option value="Satops Patnal">Satops Patnal</option>
+        </select>
+      </div>
+      <div class="input-group" id="pw-group">
+        <label>Password</label>
+        <input type="text" id="modal-password" placeholder="Kosongkan = pakai NIP">
+        <p style="font-size:10px;color:#6B7280;margin-top:-2px">Default: sama dengan NIP</p>
+      </div>
+      <p id="modal-error" style="font-size:12px;color:#E8505B;display:none"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modal-batal" style="flex:1">Batal</button>
+      <button class="btn btn-primary" id="modal-simpan" style="flex:2">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Reset Password -->
+<div id="modal-pw" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <h3>🔑 Reset Password</h3>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:10px" id="pw-user-label">-</p>
+    <div class="input-group">
+      <label>Password Baru</label>
+      <input type="text" id="new-pw" placeholder="Minimal 6 karakter">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="pw-batal" style="flex:1">Batal</button>
+      <button class="btn btn-primary" id="pw-simpan" style="flex:2">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Delete -->
+<div id="modal-del" class="modal-overlay" style="display:none">
+  <div class="modal-card" style="text-align:center">
+    <p style="font-size:40px;margin-bottom:8px">🗑️</p>
+    <h3 style="font-size:16px;font-weight:700;color:#541A1A;margin-bottom:6px">Hapus User?</h3>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:4px" id="del-name">-</p>
+    <p style="font-size:11px;color:#E8505B" id="del-nip"></p>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-outline" id="del-batal" style="flex:1">Batal</button>
+      <button class="btn btn-danger" id="del-konfirm" style="flex:1">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const API = location.origin + '/api';
+let token = localStorage.getItem('admin_token');
+let allUsers = [];
+let filterRole = '';
+let editingNip = null;
+let deletingNip = null;
+let resetPwNip = null;
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(API + path, { ...opts, headers }).then(r => {
+    if (r.status === 401) { localStorage.removeItem('admin_token'); token = null; showLogin(); throw new Error('Sesi habis'); }
+    return r.json().then(d => { if (d.error) throw new Error(d.error); return d; });
+  });
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showLogin() { showPage('page-login'); }
+
+function showAdmin() {
+  showPage('page-admin');
+  loadUsers();
+}
+
+// LOGIN
+document.getElementById('btn-login').onclick = async () => {
+  const nip = document.getElementById('login-nip').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  if (!nip || !pass) return showToast('NIP dan password wajib diisi', true);
+  try {
+    const d = await api('/auth/login', { method: 'POST', body: JSON.stringify({ nip, password: pass }) });
+    if (d.user.role !== 'admin') throw new Error('Akun ini bukan admin');
+    token = d.token;
+    localStorage.setItem('admin_token', token);
+    document.getElementById('admin-name').textContent = d.user.name;
+    showToast('Selamat datang, ' + d.user.name);
+    showAdmin();
+  } catch (e) { showToast(e.message, true); }
+};
+
+document.getElementById('btn-logout').onclick = () => {
+  token = null;
+  localStorage.removeItem('admin_token');
+  document.getElementById('login-nip').value = '';
+  document.getElementById('login-pass').value = '';
+  showLogin();
+};
+
+// LOAD USERS
+async function loadUsers() {
+  try {
+    const d = await api('/admin/users');
+    allUsers = d.users;
+    updateStats();
+    renderList();
+  } catch (e) { showToast(e.message, true); }
+}
+
+function updateStats() {
+  const counts = { total: allUsers.length, admin: 0, satops: 0, pegawai: 0 };
+  allUsers.forEach(u => { if (counts[u.role] !== undefined) counts[u.role]++; });
+  document.getElementById('stat-total').textContent = counts.total;
+  document.getElementById('stat-admin').textContent = counts.admin;
+  document.getElementById('stat-satops').textContent = counts.satops;
+  document.getElementById('stat-pegawai').textContent = counts.pegawai;
+}
+
+function renderList() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  let filtered = allUsers.filter(u => {
+    if (filterRole && u.role !== filterRole) return false;
+    if (search && !u.name.toLowerCase().includes(search) && !u.nip.includes(search)) return false;
+    return true;
+  });
+
+  const container = document.getElementById('user-list');
+  document.getElementById('user-count').textContent = `Menampilkan ${filtered.length} dari ${allUsers.length} user`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada user ditemukan</p></div>';
+    return;
+  }
+
+  const roleOrder = { admin: 0, satops: 1, pegawai: 2 };
+  filtered.sort((a, b) => (roleOrder[a.role] ?? 9) - (roleOrder[b.role] ?? 9) || a.name.localeCompare(b.name));
+
+  container.innerHTML = filtered.map(u => `
+    <div class="user-row">
+      <div class="avatar ${u.role}">${u.role === 'admin' ? '👑' : u.role === 'satops' ? '🛡️' : '👤'}</div>
+      <div class="info">
+        <div class="name">${u.name}</div>
+        <div class="meta">${u.nip} · <span class="badge badge-${u.role}">${u.role}</span>${u.divisi ? ' · ' + u.divisi : ''}</div>
+      </div>
+      <div class="actions">
+        <button class="btn-edit" onclick="editUser('${u.nip}')" title="Edit">✏️</button>
+        <button class="btn-pw" onclick="resetPw('${u.nip}','${u.name.replace(/'/g, "\\'")}')" title="Reset Password">🔑</button>
+        <button class="btn-del" onclick="confirmDelete('${u.nip}','${u.name.replace(/'/g, "\\'")}')" title="Hapus">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// SEARCH
+document.getElementById('search-input').addEventListener('input', renderList);
+
+// FILTER
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterRole = btn.dataset.role;
+    renderList();
+  });
+});
+
+// ADD USER
+document.getElementById('btn-tambah').onclick = () => {
+  editingNip = null;
+  document.getElementById('modal-title').textContent = 'Tambah User';
+  document.getElementById('modal-nip').value = '';
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-role').value = 'pegawai';
+  document.getElementById('modal-divisi').value = '';
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-nip').disabled = false;
+  document.getElementById('pw-group').style.display = '';
+  document.getElementById('modal-error').style.display = 'none';
+  document.getElementById('modal-user').style.display = 'flex';
+};
+
+// EDIT USER
+function editUser(nip) {
+  const user = allUsers.find(u => u.nip === nip);
+  if (!user) return;
+  editingNip = nip;
+  document.getElementById('modal-title').textContent = 'Edit User';
+  document.getElementById('modal-nip').value = user.nip;
+  document.getElementById('modal-nip').disabled = true;
+  document.getElementById('modal-name').value = user.name;
+  document.getElementById('modal-role').value = user.role;
+  document.getElementById('modal-divisi').value = user.divisi || '';
+  document.getElementById('modal-password').value = '';
+  document.getElementById('pw-group').style.display = 'none';
+  document.getElementById('modal-error').style.display = 'none';
+  document.getElementById('modal-user').style.display = 'flex';
+}
+
+// SAVE USER
+document.getElementById('modal-simpan').onclick = async () => {
+  const nip = document.getElementById('modal-nip').value.trim();
+  const name = document.getElementById('modal-name').value.trim();
+  const role = document.getElementById('modal-role').value;
+  const divisi = document.getElementById('modal-divisi').value;
+  const password = document.getElementById('modal-password').value.trim();
+
+  if (!nip || !name || !role) {
+    document.getElementById('modal-error').textContent = 'NIP, nama, dan role wajib diisi';
+    document.getElementById('modal-error').style.display = 'block';
+    return;
+  }
+
+  try {
+    if (editingNip) {
+      await api(`/admin/users/${editingNip}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name, role, divisi })
+      });
+      showToast('User berhasil diubah');
+    } else {
+      await api('/admin/users', {
+        method: 'POST',
+        body: JSON.stringify({ nip, name, role, divisi, password: password || undefined })
+      });
+      showToast('User berhasil ditambahkan');
+    }
+    document.getElementById('modal-user').style.display = 'none';
+    loadUsers();
+  } catch (e) {
+    document.getElementById('modal-error').textContent = e.message;
+    document.getElementById('modal-error').style.display = 'block';
+  }
+};
+
+document.getElementById('modal-batal').onclick = () => {
+  document.getElementById('modal-user').style.display = 'none';
+};
+
+// RESET PASSWORD
+function resetPw(nip, name) {
+  resetPwNip = nip;
+  document.getElementById('pw-user-label').textContent = `Reset password untuk ${name} (${nip})`;
+  document.getElementById('new-pw').value = '';
+  document.getElementById('modal-pw').style.display = 'flex';
+}
+
+document.getElementById('pw-simpan').onclick = async () => {
+  const pw = document.getElementById('new-pw').value.trim();
+  if (!pw || pw.length < 6) return showToast('Password minimal 6 karakter', true);
+  try {
+    await api(`/admin/users/${resetPwNip}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ password: pw })
+    });
+    showToast('Password berhasil direset');
+    document.getElementById('modal-pw').style.display = 'none';
+  } catch (e) { showToast(e.message, true); }
+};
+
+document.getElementById('pw-batal').onclick = () => {
+  document.getElementById('modal-pw').style.display = 'none';
+};
+
+// DELETE
+function confirmDelete(nip, name) {
+  deletingNip = nip;
+  document.getElementById('del-name').textContent = name;
+  document.getElementById('del-nip').textContent = nip;
+  document.getElementById('modal-del').style.display = 'flex';
+}
+
+document.getElementById('del-konfirm').onclick = async () => {
+  try {
+    await api(`/admin/users/${deletingNip}`, { method: 'DELETE' });
+    showToast('User berhasil dihapus');
+    document.getElementById('modal-del').style.display = 'none';
+    loadUsers();
+  } catch (e) { showToast(e.message, true); }
+};
+
+document.getElementById('del-batal').onclick = () => {
+  document.getElementById('modal-del').style.display = 'none';
+};
+
+// INIT
+if (token) {
+  api('/admin/users').then(() => showAdmin()).catch(() => showLogin());
+}
+</script>
+</body>
+</html>
