@@ -9,6 +9,7 @@ import { initDB } from './db.js';
 import authRoutes from './routes/auth.js';
 import pegawaiRoutes from './routes/pegawai.js';
 import satopsRoutes from './routes/satops.js';
+import adminRoutes from './routes/admin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/pegawai', pegawaiRoutes);
 app.use('/api/satops', satopsRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

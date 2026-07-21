@@ -100,10 +100,8 @@ function seedIfEmpty() {
     { nip: '199411222017122005', name: 'UMMI THAYYIBAH', divisi: 'KPR' },
     { nip: '199502142017121004', name: 'FEBRIAN RAMONDA', divisi: 'KPR' },
     { nip: '199702272017121003', name: 'ARI HAJAR HIDAYAT', divisi: 'KPR' },
-    { nip: '199709042017121003', name: 'HARIMURTI', divisi: 'KPR' },
     { nip: '199805152017121001', name: 'AL FATAHFISABILILLAH', divisi: 'KPR' },
     { nip: '199807142017121003', name: 'DWI ALIF SUWITO', divisi: 'KPR' },
-    { nip: '199712102017121003', name: 'HERDIANSYAH TRI ATMOKO', divisi: 'KPR' },
     { nip: '199009052025062008', name: 'ELFINA MAGDALENI', divisi: 'KPR' },
     { nip: '199212192025062002', name: 'CHRISTIANI MARBUN', divisi: 'KPR' },
     { nip: '199904122025062010', name: 'NUNIK INDARWATI', divisi: 'KPR' },
@@ -117,12 +115,12 @@ function seedIfEmpty() {
     { nip: '198912282012121002', name: 'ROYDES PUTRA JAYA PANE', divisi: 'Peltah' },
     { nip: '199105262022032001', name: 'RISHA MEIRIN, AMd.Kep', divisi: 'Peltah' },
     { nip: '199512182017121004', name: 'HARI SAHPUTRA', divisi: 'Peltah' },
-    { nip: '199706062017121002', name: 'HAYYU NUR MUHAMMAD', divisi: 'Peltah' },
     { nip: '199706242017121004', name: 'AMIRUL HADI', divisi: 'Peltah' },
     { nip: '199703162017121002', name: 'BOBI SUPRIYANTO', divisi: 'Peltah' },
     { nip: '200012122022031002', name: 'HARIS BUDIMAN', divisi: 'Peltah' },
     { nip: '200211172022032001', name: 'CHINTYA ROMAITO SIAHAAN', divisi: 'Peltah' },
     { nip: '200212292022031002', name: 'PATAR GULTOM', divisi: 'Peltah' },
+    { nip: '200605182025062003', name: 'NABILA HYFA', divisi: 'Satops Patnal' },
     { nip: '199308022012121001', name: 'SAMSUL BAHRI, S.E.', divisi: 'Bimgiat' },
     { nip: '198411272007031001', name: 'RIO SAPUTRA', divisi: 'Bimgiat' },
     { nip: '198106122008011012', name: 'KUDUS SUSANTO', divisi: 'Bimgiat' },
@@ -143,14 +141,16 @@ function seedIfEmpty() {
 
   const satopsUsers = [
     { nip: '199707262017121002', name: 'RENALDY WILLY SETYAJI', divisi: 'Satops Patnal' },
-    { nip: '200605182025062003', name: 'NABILA HYFA', divisi: 'Satops Patnal' },
+    { nip: '199712102017121003', name: 'HERDIANSYAH TRI ATMOKO', divisi: 'Satops Patnal' },
+    { nip: '199709042017121003', name: 'HARIMURTI', divisi: 'Satops Patnal' },
+    { nip: '199706062017121002', name: 'HAYYU NUR MUHAMMAD', divisi: 'Satops Patnal' },
   ];
   insertMany(satopsUsers, 'satops');
 
-  const adminHash = bcrypt.hashSync('199003102011031001', 10);
-  insert.run('199003102011031001', 'Admin SIMPEL', adminHash, 'admin', '');
+  const adminHash = bcrypt.hashSync('0000000000000001', 10);
+  insert.run('0000000000000001', 'Admin SIMPEL', adminHash, 'admin', '');
 
-  console.log('Database seeded: 58 pegawai, 2 satops, 1 admin');
+  console.log('Database seeded: 56 pegawai, 4 satops, 1 admin');
 }
 
 function migratePasswords() {
@@ -170,6 +170,23 @@ function migratePasswords() {
   }
 }
 
+function migrateRoles() {
+  const updateRole = db.prepare("UPDATE users SET role = ? WHERE nip = ?");
+  updateRole.run('satops', '199712102017121003');
+  updateRole.run('satops', '199709042017121003');
+  updateRole.run('satops', '199706062017121002');
+  updateRole.run('pegawai', '200605182025062003');
+
+  const adminExists = db.prepare("SELECT 1 FROM users WHERE nip = '0000000000000001'").get();
+  if (!adminExists) {
+    const hash = bcrypt.hashSync('0000000000000001', 10);
+    db.prepare("INSERT OR IGNORE INTO users (nip, name, password, role, divisi) VALUES (?, ?, ?, ?, ?)")
+      .run('0000000000000001', 'Admin SIMPEL', hash, 'admin', '');
+  }
+
+  console.log('Roles migrated');
+}
+
 export function todayWIB() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
 }
@@ -178,5 +195,6 @@ export function initDB() {
   createTables();
   seedIfEmpty();
   migratePasswords();
+  migrateRoles();
   console.log('Database ready');
 }
