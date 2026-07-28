@@ -31,7 +31,8 @@ router.get('/qr-data', (req, res) => {
   const ts = Date.now();
   const sesi = req.query.sesi || 'pagi';
   const payload = { nip, name: req.user.name, sesi, ts, nonce };
-  const sig = crypto.createHmac('sha256', process.env.JWT_SECRET)
+  const secret = process.env.JWT_SECRET || 'simpel-default-secret-key-2026';
+  const sig = crypto.createHmac('sha256', secret)
     .update(JSON.stringify(payload))
     .digest('hex');
   const qrData = JSON.stringify({ ...payload, sig });

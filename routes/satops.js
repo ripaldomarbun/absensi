@@ -63,7 +63,8 @@ router.post('/scan', async (req, res) => {
     if (!sig) return res.status(400).json({ error: 'QR tidak valid' });
 
     const payload = { nip, name, sesi, ts, nonce };
-    const expectedSig = crypto.createHmac('sha256', process.env.JWT_SECRET)
+    const secret = process.env.JWT_SECRET || 'simpel-default-secret-key-2026';
+    const expectedSig = crypto.createHmac('sha256', secret)
       .update(JSON.stringify(payload))
       .digest('hex');
     if (sig !== expectedSig) return res.status(400).json({ error: 'QR tidak valid' });
